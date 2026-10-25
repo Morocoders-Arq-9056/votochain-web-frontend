@@ -5,68 +5,63 @@ import { Button } from "@/components/atoms/Button";
 import { OtpInput } from "@/components/atoms/OtpInput";
 
 type OtpBoxProps = {
-  codigo: string;
-  onCodigoChange: (codigo: string) => void;
-  onVerificar?: () => void;
-  onReenviar?: () => void;
-  vigenciaSegundos?: number;
-  intentosRestantes?: number;
-  reenviando?: boolean;
-  verificando?: boolean;
+  code: string;
+  onCodeChange: (code: string) => void;
+  onVerify?: () => void;
+  onResend?: () => void;
+  validitySeconds?: number;
+  attemptsLeft?: number;
+  resending?: boolean;
+  verifying?: boolean;
 };
 
-function formatTiempo(segundos: number): string {
-  const min = Math.floor(segundos / 60);
-  const seg = segundos % 60;
-  return `${String(min).padStart(2, "0")}:${String(seg).padStart(2, "0")}`;
+function formatTime(seconds: number): string {
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
 export function OtpBox({
-  codigo,
-  onCodigoChange,
-  onVerificar,
-  onReenviar,
-  vigenciaSegundos = 300,
-  intentosRestantes = 5,
-  reenviando = false,
-  verificando = false,
+  code,
+  onCodeChange,
+  onVerify,
+  onResend,
+  validitySeconds = 300,
+  attemptsLeft = 5,
+  resending = false,
+  verifying = false,
 }: OtpBoxProps) {
-  const [restantes, setRestantes] = useState(vigenciaSegundos);
-  const [vigenciaPrevia, setVigenciaPrevia] = useState(vigenciaSegundos);
+  const [remaining, setRemaining] = useState(validitySeconds);
+  const [previousValidity, setPreviousValidity] = useState(validitySeconds);
 
-  if (vigenciaPrevia !== vigenciaSegundos) {
-    setVigenciaPrevia(vigenciaSegundos);
-    setRestantes(vigenciaSegundos);
+  if (previousValidity !== validitySeconds) {
+    setPreviousValidity(validitySeconds);
+    setRemaining(validitySeconds);
   }
 
   useEffect(() => {
-    if (restantes <= 0) return;
+    if (remaining <= 0) return;
     const id = setInterval(() => {
-      setRestantes((previo) => (previo > 0 ? previo - 1 : 0));
+      setRemaining((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(id);
-  }, [restantes]);
+  }, [remaining]);
 
-  const expirado = restantes <= 0;
+  const expired = remaining <= 0;
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <OtpInput value={codigo} onChange={onCodigoChange} />
+      <OtpInput value={code} onChange={onCodeChange} />
       <div className="flex items-center justify-between text-sm text-text-secondary">
         <span aria-live="polite">
-          {expirado ? "El código expiró" : `Vigencia ${formatTiempo(restantes)}`}
+          {expired ? "El código expiró" : `Vigencia ${formatTime(remaining)}`}
         </span>
-        <span>{intentosRestantes} intentos restantes</span>
+        <span>{attemptsLeft} intentos restantes</span>
       </div>
-      <Button type="button" onClick={onVerificar} loading={verificando}>
+      <Button type="button" onClick={onVerify} loading={verifying}>
         Verificar código
       </Button>
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={onReenviar}
-        loading={reenviando}
-      >
+      <Button type="button" variant="secondary" onClick={onResend} loading={resending}>
         Reenviar código
       </Button>
       <p className="text-sm text-text-secondary">
