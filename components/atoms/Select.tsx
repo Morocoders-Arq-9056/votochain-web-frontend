@@ -1,11 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  fieldErrorClass,
-  fieldLabelClass,
-  fieldVariants,
-  type FieldState,
-} from "./field-variants";
+import { fieldErrorClass, fieldLabelClass, fieldVariants, type FieldState } from "./field-variants";
 
 type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   label: string;
