@@ -1,27 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { VoteForm, type OpcionVoto } from "./VoteForm";
+import { VoteForm, type VoteOption } from "./VoteForm";
 
-const opciones: OpcionVoto[] = [
-  { valor: "SI", etiqueta: "Sí", descripcion: "Apruebo la propuesta" },
-  { valor: "NO", etiqueta: "No", descripcion: "No apruebo la propuesta" },
-  { valor: "ABSTENCION", etiqueta: "Abstención" },
+const options: VoteOption[] = [
+  { value: "SI", label: "Sí", description: "Apruebo la propuesta" },
+  { value: "NO", label: "No", description: "No apruebo la propuesta" },
+  { value: "ABSTENCION", label: "Abstención" },
 ];
 
 describe("VoteForm", () => {
   it("muestra las tres opciones y la regla congelada", () => {
     render(
       <VoteForm
-        propuestaTitulo="Mantenimiento de áreas comunes"
-        reglaCongelada="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
-        votanteResumen="María Quispe · DNI 4821xxxx · Dpto 302"
-        autorizacionCodigo="AUT-4821-0212"
-        validaHasta="10:05 PET (UTC−5)"
-        opciones={opciones}
-        seleccionada={null}
-        onSeleccionar={() => undefined}
-        onSolicitarFirma={() => undefined}
+        proposalTitle="Mantenimiento de áreas comunes"
+        frozenRule="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
+        voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
+        authorizationCode="AUT-4821-0212"
+        validUntil="10:05 PET (UTC−5)"
+        options={options}
+        selectedValue={null}
+        onSelect={() => undefined}
+        onRequestSignature={() => undefined}
       />,
     );
 
@@ -35,15 +35,15 @@ describe("VoteForm", () => {
   it("deshabilita Firmar y votar hasta elegir opción", () => {
     render(
       <VoteForm
-        propuestaTitulo="Mantenimiento de áreas comunes"
-        reglaCongelada="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
-        votanteResumen="María Quispe · DNI 4821xxxx · Dpto 302"
-        autorizacionCodigo="AUT-4821-0212"
-        validaHasta="10:05 PET (UTC−5)"
-        opciones={opciones}
-        seleccionada={null}
-        onSeleccionar={() => undefined}
-        onSolicitarFirma={() => undefined}
+        proposalTitle="Mantenimiento de áreas comunes"
+        frozenRule="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
+        voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
+        authorizationCode="AUT-4821-0212"
+        validUntil="10:05 PET (UTC−5)"
+        options={options}
+        selectedValue={null}
+        onSelect={() => undefined}
+        onRequestSignature={() => undefined}
       />,
     );
 
@@ -55,45 +55,45 @@ describe("VoteForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("emite onSeleccionar al marcar una opción", async () => {
-    const onSeleccionar = vi.fn();
+  it("emite onSelect al marcar una opción", async () => {
+    const onSelect = vi.fn();
     render(
       <VoteForm
-        propuestaTitulo="Mantenimiento de áreas comunes"
-        reglaCongelada="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
-        votanteResumen="María Quispe · DNI 4821xxxx · Dpto 302"
-        autorizacionCodigo="AUT-4821-0212"
-        validaHasta="10:05 PET (UTC−5)"
-        opciones={opciones}
-        seleccionada={null}
-        onSeleccionar={onSeleccionar}
-        onSolicitarFirma={() => undefined}
+        proposalTitle="Mantenimiento de áreas comunes"
+        frozenRule="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
+        voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
+        authorizationCode="AUT-4821-0212"
+        validUntil="10:05 PET (UTC−5)"
+        options={options}
+        selectedValue={null}
+        onSelect={onSelect}
+        onRequestSignature={() => undefined}
       />,
     );
 
     await userEvent.click(screen.getByRole("radio", { name: /Sí/ }));
-    expect(onSeleccionar).toHaveBeenCalledWith("SI");
+    expect(onSelect).toHaveBeenCalledWith("SI");
   });
 
-  it("con opción elegida habilita el botón y emite onSolicitarFirma", async () => {
-    const onSolicitarFirma = vi.fn();
+  it("con opción elegida habilita el botón y emite onRequestSignature", async () => {
+    const onRequestSignature = vi.fn();
     render(
       <VoteForm
-        propuestaTitulo="Mantenimiento de áreas comunes"
-        reglaCongelada="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
-        votanteResumen="María Quispe · DNI 4821xxxx · Dpto 302"
-        autorizacionCodigo="AUT-4821-0212"
-        validaHasta="10:05 PET (UTC−5)"
-        opciones={opciones}
-        seleccionada="SI"
-        onSeleccionar={() => undefined}
-        onSolicitarFirma={onSolicitarFirma}
+        proposalTitle="Mantenimiento de áreas comunes"
+        frozenRule="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
+        voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
+        authorizationCode="AUT-4821-0212"
+        validUntil="10:05 PET (UTC−5)"
+        options={options}
+        selectedValue="SI"
+        onSelect={() => undefined}
+        onRequestSignature={onRequestSignature}
       />,
     );
 
-    const boton = screen.getByRole("button", { name: "Firmar y votar" });
-    expect(boton).toBeEnabled();
-    await userEvent.click(boton);
-    expect(onSolicitarFirma).toHaveBeenCalledTimes(1);
+    const button = screen.getByRole("button", { name: "Firmar y votar" });
+    expect(button).toBeEnabled();
+    await userEvent.click(button);
+    expect(onRequestSignature).toHaveBeenCalledTimes(1);
   });
 });
