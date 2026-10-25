@@ -1,1 +1,1 @@
-export {};
+export { OtpBox } from "./OtpBox";
