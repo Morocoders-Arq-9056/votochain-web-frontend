@@ -1,4 +1,5 @@
-import { Badge, Button } from "@/components/atoms";
+import { Badge } from "@/components/atoms/Badge";
+import { Button } from "@/components/atoms/Button";
 
 export default function VotePage() {
   return (

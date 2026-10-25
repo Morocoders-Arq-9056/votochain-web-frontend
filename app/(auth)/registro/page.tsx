@@ -1,4 +1,4 @@
-import { Button } from "@/components/atoms";
+import { Button } from "@/components/atoms/Button";
 
 export default function RegisterPage() {
   return (
