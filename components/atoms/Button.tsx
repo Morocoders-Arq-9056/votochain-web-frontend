@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./Spinner";
 
 const buttonVariants = cva(
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-6 text-base font-semibold transition-colors focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-50",
@@ -9,6 +10,7 @@ const buttonVariants = cva(
         primary: "bg-brand-primary text-white",
         secondary: "border border-border bg-surface text-text-primary",
         danger: "bg-danger text-white",
+        ghost: "text-text-primary",
       },
     },
     defaultVariants: { variant: "primary" },
@@ -18,10 +20,21 @@ const buttonVariants = cva(
 export function Button({
   className,
   variant,
+  loading = false,
+  disabled,
+  children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants>) {
+  VariantProps<typeof buttonVariants> & { loading?: boolean }) {
   return (
-    <button className={cn(buttonVariants({ variant, className }))} {...props} />
+    <button
+      className={cn(buttonVariants({ variant, className }))}
+      disabled={disabled ?? loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading && <Spinner size="sm" aria-hidden />}
+      {children}
+    </button>
   );
 }
