@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED = [/^\/(votar|propuestas|recibo|padron|permisos|documento)/];
+const PROTECTED = [/^\/(votar|propuestas|recibo|padron|permisos|documento|autorizacion)/];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -14,6 +14,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/votar",
+    "/autorizacion",
     "/padron",
     "/documento",
     "/permisos",
