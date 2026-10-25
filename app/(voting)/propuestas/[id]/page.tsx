@@ -1,4 +1,4 @@
-export default function PropuestaPage() {
+export default function ProposalPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 pt-10">
       <h1 className="font-display text-2xl">Detalle de propuesta</h1>

@@ -8,12 +8,12 @@ import {
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
-  ayuda?: string;
+  hint?: string;
   state?: FieldState;
 };
 
-export function Input({ className, id, label, ayuda, state, ...props }: InputProps) {
-  const errorId = state === "error" && ayuda ? `${id}-ayuda` : undefined;
+export function Input({ className, id, label, hint, state, ...props }: InputProps) {
+  const hintId = state === "error" && hint ? `${id}-hint` : undefined;
   return (
     <div className="flex w-full flex-col gap-2">
       <label htmlFor={id} className={fieldLabelClass}>
@@ -22,13 +22,13 @@ export function Input({ className, id, label, ayuda, state, ...props }: InputPro
       <input
         id={id}
         aria-invalid={state === "error"}
-        aria-describedby={errorId}
+        aria-describedby={hintId}
         className={cn(fieldVariants({ state, className }))}
         {...props}
       />
-      {errorId && (
-        <p id={errorId} role="alert" className={fieldErrorClass}>
-          {ayuda}
+      {hintId && (
+        <p id={hintId} role="alert" className={fieldErrorClass}>
+          {hint}
         </p>
       )}
     </div>

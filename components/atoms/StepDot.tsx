@@ -1,13 +1,14 @@
 import { Check, LoaderCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { StepStatus } from "@/lib/domain/voting/receipt.vo";
 
-export type EstadoPaso = "done" | "current" | "failed";
+export type { StepStatus };
 
 export function StepDot({
-  estado,
+  status,
   className,
 }: {
-  estado: EstadoPaso;
+  status: StepStatus;
   className?: string;
 }) {
   return (
@@ -15,15 +16,15 @@ export function StepDot({
       aria-hidden
       className={cn(
         "flex size-7 shrink-0 items-center justify-center rounded-full border",
-        estado === "done" && "border-bg-success bg-bg-success text-success",
-        estado === "current" && "border-brand-primary bg-bg text-brand-primary",
-        estado === "failed" && "border-bg-danger bg-bg-danger text-danger",
+        status === "done" && "border-bg-success bg-bg-success text-success",
+        status === "current" && "border-brand-primary bg-bg text-brand-primary",
+        status === "failed" && "border-bg-danger bg-bg-danger text-danger",
         className,
       )}
     >
-      {estado === "done" && <Check className="size-4" />}
-      {estado === "current" && <LoaderCircle className="size-4 animate-spin" />}
-      {estado === "failed" && <X className="size-4" />}
+      {status === "done" && <Check className="size-4" />}
+      {status === "current" && <LoaderCircle className="size-4 animate-spin" />}
+      {status === "failed" && <X className="size-4" />}
     </span>
   );
 }

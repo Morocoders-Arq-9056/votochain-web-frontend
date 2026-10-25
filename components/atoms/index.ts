@@ -7,5 +7,5 @@ export { RadioCard } from "./RadioCard";
 export { Select } from "./Select";
 export { Spinner } from "./Spinner";
 export { StepDot } from "./StepDot";
-export type { EstadoPaso } from "./StepDot";
+export type { StepStatus } from "./StepDot";
 export { Textarea } from "./Textarea";

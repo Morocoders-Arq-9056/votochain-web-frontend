@@ -5,53 +5,53 @@ import { Button } from "@/components/atoms/Button";
 
 type SignModalProps = {
   open: boolean;
-  propuestaTitulo: string;
-  opcionEtiqueta: string;
-  votanteResumen: string;
-  onFirmar: () => void;
-  onCancelar: () => void;
-  firmando?: boolean;
+  proposalTitle: string;
+  optionLabel: string;
+  voterSummary: string;
+  onSign: () => void;
+  onCancel: () => void;
+  signing?: boolean;
 };
 
 export function SignModal({
   open,
-  propuestaTitulo,
-  opcionEtiqueta,
-  votanteResumen,
-  onFirmar,
-  onCancelar,
-  firmando = false,
+  proposalTitle,
+  optionLabel,
+  voterSummary,
+  onSign,
+  onCancel,
+  signing = false,
 }: SignModalProps) {
   useEffect(() => {
     if (!open) return;
-    const alPulsar = (evento: KeyboardEvent) => {
-      if (evento.key === "Escape") onCancelar();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCancel();
     };
-    document.addEventListener("keydown", alPulsar);
-    return () => document.removeEventListener("keydown", alPulsar);
-  }, [open, onCancelar]);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onCancel]);
 
   if (!open) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-text-primary/40 sm:items-center"
-      onClick={onCancelar}
+      onClick={onCancel}
     >
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="titulo-firma"
-        onClick={(evento) => evento.stopPropagation()}
+        aria-labelledby="sign-modal-title"
+        onClick={(event) => event.stopPropagation()}
         className="flex w-full max-w-md flex-col gap-4 rounded-t-sheet bg-surface p-6 sm:rounded-lg"
       >
-        <h2 id="titulo-firma" className="font-display text-xl text-text-primary">
+        <h2 id="sign-modal-title" className="font-display text-xl text-text-primary">
           Autoriza firmar este contenido
         </h2>
         <div className="flex flex-col gap-1">
-          <span className="text-base text-text-primary">{propuestaTitulo}</span>
-          <span className="text-base text-text-primary">{opcionEtiqueta}</span>
-          <span className="text-sm text-text-secondary">{votanteResumen}</span>
+          <span className="text-base text-text-primary">{proposalTitle}</span>
+          <span className="text-base text-text-primary">{optionLabel}</span>
+          <span className="text-sm text-text-secondary">{voterSummary}</span>
         </div>
         <div className="flex flex-col gap-1 rounded-md border border-border bg-bg p-4">
           <span className="text-base text-text-primary">
@@ -63,10 +63,10 @@ export function SignModal({
           </span>
         </div>
         <div className="dialog-actions">
-          <Button type="button" onClick={onFirmar} loading={firmando}>
+          <Button type="button" onClick={onSign} loading={signing}>
             Firmar
           </Button>
-          <Button type="button" variant="secondary" onClick={onCancelar}>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancelar
           </Button>
         </div>

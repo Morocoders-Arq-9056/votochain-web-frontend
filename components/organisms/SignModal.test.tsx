@@ -4,11 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { SignModal } from "./SignModal";
 
 const baseProps = {
-  propuestaTitulo: "Mantenimiento de áreas comunes",
-  opcionEtiqueta: "Sí · Apruebo la propuesta",
-  votanteResumen: "María Quispe · DNI 4821xxxx · Dpto 302",
-  onFirmar: () => undefined,
-  onCancelar: () => undefined,
+  proposalTitle: "Mantenimiento de áreas comunes",
+  optionLabel: "Sí · Apruebo la propuesta",
+  voterSummary: "María Quispe · DNI 4821xxxx · Dpto 302",
+  onSign: () => undefined,
+  onCancel: () => undefined,
 };
 
 describe("SignModal", () => {
@@ -35,30 +35,30 @@ describe("SignModal", () => {
     expect(screen.queryByText(/wallet/i)).toBeNull();
   });
 
-  it("emite onFirmar y onCancelar", async () => {
-    const onFirmar = vi.fn();
-    const onCancelar = vi.fn();
+  it("emite onSign y onCancel", async () => {
+    const onSign = vi.fn();
+    const onCancel = vi.fn();
     render(
       <SignModal
         {...baseProps}
         open
-        onFirmar={onFirmar}
-        onCancelar={onCancelar}
+        onSign={onSign}
+        onCancel={onCancel}
       />,
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Firmar" }));
-    expect(onFirmar).toHaveBeenCalledTimes(1);
+    expect(onSign).toHaveBeenCalledTimes(1);
 
     await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
-    expect(onCancelar).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it("cierra con la tecla Escape", async () => {
-    const onCancelar = vi.fn();
-    render(<SignModal {...baseProps} open onCancelar={onCancelar} />);
+    const onCancel = vi.fn();
+    render(<SignModal {...baseProps} open onCancel={onCancel} />);
 
     await userEvent.keyboard("{Escape}");
-    expect(onCancelar).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });

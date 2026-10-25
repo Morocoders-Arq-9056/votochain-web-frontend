@@ -1,44 +1,44 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { VoteReceiptTimeline, type PasoRecibo } from "./VoteReceiptTimeline";
+import { VoteReceiptTimeline, type ReceiptStep } from "./VoteReceiptTimeline";
 
-const pasos: PasoRecibo[] = [
+const steps: ReceiptStep[] = [
   {
-    clave: "firmado",
-    etiqueta: "Firmado",
-    fechaHora: "12/02/2026 · 10:01 PET (UTC−5)",
-    estado: "done",
+    key: "signed",
+    label: "Firmado",
+    dateTime: "12/02/2026 · 10:01 PET (UTC−5)",
+    status: "done",
   },
   {
-    clave: "en-cola",
-    etiqueta: "En cola",
-    fechaHora: "12/02/2026 · 10:02 PET (UTC−5)",
-    estado: "done",
+    key: "queued",
+    label: "En cola",
+    dateTime: "12/02/2026 · 10:02 PET (UTC−5)",
+    status: "done",
   },
   {
-    clave: "enviado",
-    etiqueta: "Enviado",
-    fechaHora: "12/02/2026 · 10:03 PET (UTC−5)",
-    estado: "done",
+    key: "sent",
+    label: "Enviado",
+    dateTime: "12/02/2026 · 10:03 PET (UTC−5)",
+    status: "done",
   },
   {
-    clave: "confirmado",
-    etiqueta: "Confirmado en blockchain",
-    fechaHora: "12/02/2026 · 10:04 PET (UTC−5)",
-    estado: "current",
+    key: "confirmed",
+    label: "Confirmado en blockchain",
+    dateTime: "12/02/2026 · 10:04 PET (UTC−5)",
+    status: "current",
   },
 ];
 
 describe("VoteReceiptTimeline", () => {
-  it("CONFIRMADO: muestra que ya cuenta en el escrutinio y la constancia", () => {
+  it("CONFIRMED: muestra que ya cuenta en el escrutinio y la constancia", () => {
     render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={pasos}
-        resultado={{
-          estado: "CONFIRMADO",
+        proposal="Mantenimiento de áreas comunes"
+        steps={steps}
+        result={{
+          status: "CONFIRMED",
           hash: "0x9f3a7c21b8e4d5f6a2c9b0d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
-          exploradorUrl: "https://explorador.example/voto/0x9f3a",
+          explorerUrl: "https://explorador.example/voto/0x9f3a",
         }}
       />,
     );
@@ -52,31 +52,31 @@ describe("VoteReceiptTimeline", () => {
     expect(screen.getByText(/^Código de constancia/)).toBeInTheDocument();
   });
 
-  it("CONFIRMADO: enlaza al explorador blockchain", () => {
+  it("CONFIRMED: enlaza al explorador blockchain", () => {
     render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={pasos}
-        resultado={{
-          estado: "CONFIRMADO",
+        proposal="Mantenimiento de áreas comunes"
+        steps={steps}
+        result={{
+          status: "CONFIRMED",
           hash: "0xabc",
-          exploradorUrl: "https://explorador.example/voto/0xabc",
+          explorerUrl: "https://explorador.example/voto/0xabc",
         }}
       />,
     );
 
-    const enlace = screen.getByRole("link", {
+    const link = screen.getByRole("link", {
       name: "Ver en explorador blockchain",
     });
-    expect(enlace).toHaveAttribute("href", "https://explorador.example/voto/0xabc");
+    expect(link).toHaveAttribute("href", "https://explorador.example/voto/0xabc");
   });
 
-  it("sin exploradorUrl no renderiza el enlace", () => {
+  it("sin explorerUrl no renderiza el enlace", () => {
     render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={pasos}
-        resultado={{ estado: "CONFIRMADO", hash: "0xabc" }}
+        proposal="Mantenimiento de áreas comunes"
+        steps={steps}
+        result={{ status: "CONFIRMED", hash: "0xabc" }}
       />,
     );
 
@@ -85,23 +85,23 @@ describe("VoteReceiptTimeline", () => {
     ).toBeNull();
   });
 
-  it("FALLIDO: muestra motivo, marca aún no cuenta y no da enlace", () => {
+  it("FAILED: muestra motivo, marca aún no cuenta y no da enlace", () => {
     render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={[
-          ...pasos.slice(0, 3),
+        proposal="Mantenimiento de áreas comunes"
+        steps={[
+          ...steps.slice(0, 3),
           {
-            clave: "fallido",
-            etiqueta: "Fallido",
-            fechaHora: "12/02/2026 · 10:04 PET (UTC−5)",
-            estado: "failed",
+            key: "failed",
+            label: "Fallido",
+            dateTime: "12/02/2026 · 10:04 PET (UTC−5)",
+            status: "failed",
           },
         ]}
-        resultado={{
-          estado: "FALLIDO",
-          motivo: "Rechazado por la red. Reintento automático 1 de 3 en curso.",
-          reintentable: true,
+        result={{
+          status: "FAILED",
+          reason: "Rechazado por la red. Reintento automático 1 de 3 en curso.",
+          retryable: true,
         }}
       />,
     );
@@ -115,15 +115,15 @@ describe("VoteReceiptTimeline", () => {
     ).toBeNull();
   });
 
-  it("FALLIDO terminal: indica contactar soporte y no reintentar", () => {
+  it("FAILED terminal: indica contactar soporte y no reintentar", () => {
     render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={pasos}
-        resultado={{
-          estado: "FALLIDO",
-          motivo: "Se agotó el límite de 3 reintentos automáticos.",
-          reintentable: false,
+        proposal="Mantenimiento de áreas comunes"
+        steps={steps}
+        result={{
+          status: "FAILED",
+          reason: "Se agotó el límite de 3 reintentos automáticos.",
+          retryable: false,
         }}
       />,
     );
@@ -137,9 +137,9 @@ describe("VoteReceiptTimeline", () => {
   it("marca solo el paso corriente y expone aria-live", () => {
     const { container } = render(
       <VoteReceiptTimeline
-        propuesta="Mantenimiento de áreas comunes"
-        pasos={pasos}
-        resultado={{ estado: "CONFIRMADO", hash: "0xabc" }}
+        proposal="Mantenimiento de áreas comunes"
+        steps={steps}
+        result={{ status: "CONFIRMED", hash: "0xabc" }}
       />,
     );
 

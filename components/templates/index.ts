@@ -1,1 +1,1 @@
-export {};
+export { ReceiptTemplate } from "./ReceiptTemplate";
