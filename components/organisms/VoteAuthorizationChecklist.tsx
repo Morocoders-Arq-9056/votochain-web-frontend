@@ -1,51 +1,51 @@
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
 
-export type TonoCriterio = "success" | "warning" | "danger" | "neutral";
+export type CriterionTone = "success" | "warning" | "danger" | "neutral";
 
-export type CriterioChecklist = {
-  pregunta: string;
-  cumple: boolean;
-  estado: string;
-  tono: TonoCriterio;
+export type ChecklistCriterion = {
+  question: string;
+  met: boolean;
+  status: string;
+  tone: CriterionTone;
 };
 
-export type ResultadoAutorizacion =
-  | { estado: "AUTORIZADA"; codigo: string; validaHasta: string }
-  | { estado: "DENEGADA"; motivo: string }
-  | { estado: "EXPIRADA" };
+export type AuthorizationResult =
+  | { status: "AUTHORIZED"; code: string; validUntil: string }
+  | { status: "DENIED"; reason: string }
+  | { status: "EXPIRED" };
 
 type VoteAuthorizationChecklistProps = {
-  propuesta: string;
-  membresia: CriterioChecklist;
-  biometria: CriterioChecklist;
-  resultado: ResultadoAutorizacion;
-  onVotarAhora?: () => void;
-  onIrAPruebaDeVida?: () => void;
-  onPedirDeNuevo?: () => void;
+  proposal: string;
+  membership: ChecklistCriterion;
+  biometrics: ChecklistCriterion;
+  result: AuthorizationResult;
+  onVoteNow?: () => void;
+  onStartLiveness?: () => void;
+  onRequestAgain?: () => void;
 };
 
-function Criterio({ criterio }: { criterio: CriterioChecklist }) {
+function Criterion({ criterion }: { criterion: ChecklistCriterion }) {
   return (
     <div className="flex w-full flex-col gap-2">
-      <span className="text-base text-text-primary">{criterio.pregunta}</span>
-      <Badge tone={criterio.tono}>{criterio.estado}</Badge>
+      <span className="text-base text-text-primary">{criterion.question}</span>
+      <Badge tone={criterion.tone}>{criterion.status}</Badge>
     </div>
   );
 }
 
 export function VoteAuthorizationChecklist({
-  propuesta,
-  membresia,
-  biometria,
-  resultado,
-  onVotarAhora,
-  onIrAPruebaDeVida,
-  onPedirDeNuevo,
+  proposal,
+  membership,
+  biometrics,
+  result,
+  onVoteNow,
+  onStartLiveness,
+  onRequestAgain,
 }: VoteAuthorizationChecklistProps) {
-  const autorizada = resultado.estado === "AUTORIZADA";
-  const expirada = resultado.estado === "EXPIRADA";
-  const sinBiometria = !biometria.cumple;
+  const authorized = result.status === "AUTHORIZED";
+  const expired = result.status === "EXPIRED";
+  const missingBiometrics = !biometrics.met;
 
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-border bg-surface p-5">
@@ -53,20 +53,20 @@ export function VoteAuthorizationChecklist({
         <h2 className="font-display text-xl text-text-primary">
           Autorización
         </h2>
-        <span className="text-base text-text-secondary">{propuesta}</span>
+        <span className="text-base text-text-secondary">{proposal}</span>
       </header>
 
       <div className="flex flex-col gap-4">
-        <Criterio criterio={membresia} />
-        <Criterio criterio={biometria} />
+        <Criterion criterion={membership} />
+        <Criterion criterion={biometrics} />
       </div>
 
-      {autorizada && (
+      {authorized && (
         <div className="flex flex-col gap-2">
           <Badge tone="success">Autorizada</Badge>
           <p className="text-base text-text-primary">
-            Autorización de un solo uso {resultado.codigo}, válida hasta{" "}
-            {resultado.validaHasta}.
+            Autorización de un solo uso {result.code}, válida hasta{" "}
+            {result.validUntil}.
           </p>
           <p className="text-sm text-text-secondary">
             Al emitirla se congelaron su elegibilidad y el veredicto biométrico.
@@ -75,17 +75,17 @@ export function VoteAuthorizationChecklist({
         </div>
       )}
 
-      {resultado.estado === "DENEGADA" && (
+      {result.status === "DENIED" && (
         <div className="flex flex-col gap-2">
           <Badge tone="danger">Denegada</Badge>
           <p className="text-base text-text-primary">
             No puede votar en esta propuesta
           </p>
-          <p className="text-sm text-text-secondary">{resultado.motivo}</p>
+          <p className="text-sm text-text-secondary">{result.reason}</p>
         </div>
       )}
 
-      {expirada && (
+      {expired && (
         <div className="flex flex-col gap-2">
           <Badge tone="neutral">Expirada</Badge>
           <p className="text-base text-text-primary">La autorización venció</p>
@@ -97,18 +97,18 @@ export function VoteAuthorizationChecklist({
       )}
 
       <div className="form-actions">
-        {autorizada && (
-          <Button type="button" onClick={onVotarAhora}>
+        {authorized && (
+          <Button type="button" onClick={onVoteNow}>
             Votar ahora
           </Button>
         )}
-        {sinBiometria && (
-          <Button type="button" variant="secondary" onClick={onIrAPruebaDeVida}>
+        {missingBiometrics && (
+          <Button type="button" variant="secondary" onClick={onStartLiveness}>
             Ir a prueba de vida
           </Button>
         )}
-        {expirada && (
-          <Button type="button" onClick={onPedirDeNuevo}>
+        {expired && (
+          <Button type="button" onClick={onRequestAgain}>
             Pedir de nuevo
           </Button>
         )}

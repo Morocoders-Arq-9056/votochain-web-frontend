@@ -3,36 +3,36 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   VoteAuthorizationChecklist,
-  type CriterioChecklist,
+  type ChecklistCriterion,
 } from "./VoteAuthorizationChecklist";
 
-const membresiaActiva: CriterioChecklist = {
-  pregunta: "1. ¿Membresía activa?",
-  cumple: true,
-  estado: "Sí · Activa",
-  tono: "success",
+const activeMembership: ChecklistCriterion = {
+  question: "1. ¿Membresía activa?",
+  met: true,
+  status: "Sí · Activa",
+  tone: "success",
 };
 
-const biometriaVerificada: CriterioChecklist = {
-  pregunta: "2. ¿Biometría fresca?",
-  cumple: true,
-  estado: "Sí · Verificado",
-  tono: "success",
+const verifiedBiometrics: ChecklistCriterion = {
+  question: "2. ¿Biometría fresca?",
+  met: true,
+  status: "Sí · Verificado",
+  tone: "success",
 };
 
 describe("VoteAuthorizationChecklist", () => {
-  it("AUTORIZADA: muestra código de un solo uso y Votar ahora", () => {
+  it("AUTHORIZED: muestra código de un solo uso y Votar ahora", () => {
     render(
       <VoteAuthorizationChecklist
-        propuesta="Mantenimiento de áreas comunes"
-        membresia={membresiaActiva}
-        biometria={biometriaVerificada}
-        resultado={{
-          estado: "AUTORIZADA",
-          codigo: "AUT-4821-0212",
-          validaHasta: "10:05 PET (UTC−5)",
+        proposal="Mantenimiento de áreas comunes"
+        membership={activeMembership}
+        biometrics={verifiedBiometrics}
+        result={{
+          status: "AUTHORIZED",
+          code: "AUT-4821-0212",
+          validUntil: "10:05 PET (UTC−5)",
         }}
-        onVotarAhora={() => undefined}
+        onVoteNow={() => undefined}
       />,
     );
 
@@ -41,20 +41,20 @@ describe("VoteAuthorizationChecklist", () => {
     expect(screen.queryByRole("button", { name: "Ir a prueba de vida" })).toBeNull();
   });
 
-  it("DENEGADA: muestra el motivo y no ofrece votar", () => {
+  it("DENIED: muestra el motivo y no ofrece votar", () => {
     render(
       <VoteAuthorizationChecklist
-        propuesta="Mantenimiento de áreas comunes"
-        membresia={{
-          pregunta: "1. ¿Membresía activa?",
-          cumple: false,
-          estado: "No · Moroso",
-          tono: "warning",
+        proposal="Mantenimiento de áreas comunes"
+        membership={{
+          question: "1. ¿Membresía activa?",
+          met: false,
+          status: "No · Moroso",
+          tone: "warning",
         }}
-        biometria={biometriaVerificada}
-        resultado={{
-          estado: "DENEGADA",
-          motivo:
+        biometrics={verifiedBiometrics}
+        result={{
+          status: "DENIED",
+          reason:
             "Su membresía está morosa. Revise su situación con el administrador de la comunidad.",
         }}
       />,
@@ -69,16 +69,16 @@ describe("VoteAuthorizationChecklist", () => {
   it("Falta biometría: ofrece Ir a prueba de vida", () => {
     render(
       <VoteAuthorizationChecklist
-        propuesta="Mantenimiento de áreas comunes"
-        membresia={membresiaActiva}
-        biometria={{
-          pregunta: "2. ¿Biometría fresca?",
-          cumple: false,
-          estado: "No · Expirado",
-          tono: "neutral",
+        proposal="Mantenimiento de áreas comunes"
+        membership={activeMembership}
+        biometrics={{
+          question: "2. ¿Biometría fresca?",
+          met: false,
+          status: "No · Expirado",
+          tone: "neutral",
         }}
-        resultado={{ estado: "DENEGADA", motivo: "Motivo de denegación" }}
-        onIrAPruebaDeVida={() => undefined}
+        result={{ status: "DENIED", reason: "Motivo de denegación" }}
+        onStartLiveness={() => undefined}
       />,
     );
 
@@ -87,14 +87,14 @@ describe("VoteAuthorizationChecklist", () => {
     ).toBeInTheDocument();
   });
 
-  it("EXPIRADA: ofrece pedir de nuevo y no vota", () => {
+  it("EXPIRED: ofrece pedir de nuevo y no vota", () => {
     render(
       <VoteAuthorizationChecklist
-        propuesta="Mantenimiento de áreas comunes"
-        membresia={membresiaActiva}
-        biometria={biometriaVerificada}
-        resultado={{ estado: "EXPIRADA" }}
-        onPedirDeNuevo={() => undefined}
+        proposal="Mantenimiento de áreas comunes"
+        membership={activeMembership}
+        biometrics={verifiedBiometrics}
+        result={{ status: "EXPIRED" }}
+        onRequestAgain={() => undefined}
       />,
     );
 
@@ -104,23 +104,23 @@ describe("VoteAuthorizationChecklist", () => {
     expect(screen.queryByRole("button", { name: "Votar ahora" })).toBeNull();
   });
 
-  it("emite onVotarAhora al pulsar Votar ahora", async () => {
-    const onVotarAhora = vi.fn();
+  it("emite onVoteNow al pulsar Votar ahora", async () => {
+    const onVoteNow = vi.fn();
     render(
       <VoteAuthorizationChecklist
-        propuesta="Mantenimiento de áreas comunes"
-        membresia={membresiaActiva}
-        biometria={biometriaVerificada}
-        resultado={{
-          estado: "AUTORIZADA",
-          codigo: "AUT-4821-0212",
-          validaHasta: "10:05 PET (UTC−5)",
+        proposal="Mantenimiento de áreas comunes"
+        membership={activeMembership}
+        biometrics={verifiedBiometrics}
+        result={{
+          status: "AUTHORIZED",
+          code: "AUT-4821-0212",
+          validUntil: "10:05 PET (UTC−5)",
         }}
-        onVotarAhora={onVotarAhora}
+        onVoteNow={onVoteNow}
       />,
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Votar ahora" }));
-    expect(onVotarAhora).toHaveBeenCalledTimes(1);
+    expect(onVoteNow).toHaveBeenCalledTimes(1);
   });
 });
