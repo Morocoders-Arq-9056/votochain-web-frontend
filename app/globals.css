@@ -57,6 +57,51 @@
   min-height: 72px;
 }
 
+/*
+ * Sombras VDS: Figma Foundations indica "sm / md / lg · discretas" sin
+ * valores exactos (extracción de código no disponible). Se conservan las
+ * --shadow-sm/md/lg nativas de Tailwind v4 hasta handoff de valores.
+ */
+
+@utility form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  & > * {
+    min-height: 48px;
+    width: 100%;
+  }
+  @media (min-width: 640px) {
+    flex-direction: row;
+    & > * {
+      flex: 1 1 0%;
+    }
+  }
+}
+
+/*
+ * Par de botones de diálogo (medido en Figma 9:33417 Suspender membresía):
+ * Cancelar 150x48 + Confirmar 226x48, misma altura, anchos por contenido,
+ * alineados a la derecha, gap 20. En móvil se apilan a ancho completo.
+ */
+@utility dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  & > * {
+    min-height: 48px;
+    width: 100%;
+  }
+  @media (min-width: 640px) {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    & > * {
+      width: auto;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
