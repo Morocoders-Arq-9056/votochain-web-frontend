@@ -9,6 +9,7 @@ const buttonVariants = cva(
         primary: "bg-brand-primary text-white",
         secondary: "border border-border bg-surface text-text-primary",
         danger: "bg-danger text-white",
+        ghost: "text-text-primary",
       },
     },
     defaultVariants: { variant: "primary" },
