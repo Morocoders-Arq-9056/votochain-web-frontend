@@ -1,19 +1,12 @@
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
+import type {
+  AuthorizationResult,
+  ChecklistCriterion,
+  CriterionTone,
+} from "@/lib/domain/voting/authorization.vo";
 
-export type CriterionTone = "success" | "warning" | "danger" | "neutral";
-
-export type ChecklistCriterion = {
-  question: string;
-  met: boolean;
-  status: string;
-  tone: CriterionTone;
-};
-
-export type AuthorizationResult =
-  | { status: "AUTHORIZED"; code: string; validUntil: string }
-  | { status: "DENIED"; reason: string }
-  | { status: "EXPIRED" };
+export type { AuthorizationResult, ChecklistCriterion, CriterionTone };
 
 type VoteAuthorizationChecklistProps = {
   proposal: string;

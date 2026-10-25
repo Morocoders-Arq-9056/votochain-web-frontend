@@ -1,10 +1,12 @@
+export { BottomNavigation } from "./BottomNavigation";
+export type { NavigationItem } from "./BottomNavigation";
 export { SignModal } from "./SignModal";
 export { VoteAuthorizationChecklist } from "./VoteAuthorizationChecklist";
 export type {
   AuthorizationResult,
   ChecklistCriterion,
   CriterionTone,
-} from "./VoteAuthorizationChecklist";
+} from "@/lib/domain/voting/authorization.vo";
 export { VoteForm } from "./VoteForm";
 export type { VoteOption } from "./VoteForm";
 export { VoteReceiptTimeline } from "./VoteReceiptTimeline";
