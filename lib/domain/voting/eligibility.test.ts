@@ -19,7 +19,7 @@ describe("canRequestAuthorization", () => {
       communityStanding: "ACTIVE",
     });
     expect(r.ok).toBe(false);
-    expect(r.motivo).toMatch(/Membresía/);
+    expect(r.reason).toMatch(/Membresía/);
   });
 
   it("no verificado → pide rostro", () => {
@@ -28,7 +28,7 @@ describe("canRequestAuthorization", () => {
       verifiedNow: false,
       communityStanding: "ACTIVE",
     });
-    expect(r).toEqual({ ok: false, motivo: "Necesita verificar su rostro ahora" });
+    expect(r).toEqual({ ok: false, reason: "Necesita verificar su rostro ahora" });
   });
 
   it("comunidad suspendida → motivo", () => {

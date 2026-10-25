@@ -8,18 +8,22 @@ export const EligibilitySchema = z.object({
 
 export type Eligibility = z.infer<typeof EligibilitySchema>;
 
+export type EligibilityDecision =
+  | { ok: true; reason: string }
+  | { ok: false; reason: string };
+
 export function canRequestAuthorization(
   input: Eligibility,
-): { ok: true; motivo: string } | { ok: false; motivo: string } {
+): EligibilityDecision {
   const parsed = EligibilitySchema.parse(input);
   if (parsed.communityStanding !== "ACTIVE") {
-    return { ok: false, motivo: "Comunidad suspendida" };
+    return { ok: false, reason: "Comunidad suspendida" };
   }
   if (parsed.membershipStanding !== "ACTIVE") {
-    return { ok: false, motivo: "Membresía no activa" };
+    return { ok: false, reason: "Membresía no activa" };
   }
   if (!parsed.verifiedNow) {
-    return { ok: false, motivo: "Necesita verificar su rostro ahora" };
+    return { ok: false, reason: "Necesita verificar su rostro ahora" };
   }
-  return { ok: true, motivo: "Elegible para solicitar autorización" };
+  return { ok: true, reason: "Elegible para solicitar autorización" };
 }
