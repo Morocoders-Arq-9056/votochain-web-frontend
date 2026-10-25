@@ -1,6 +1,6 @@
 import { Badge, Button } from "@/components/atoms";
 
-export default function VotarPage() {
+export default function VotePage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-surface px-6 pt-10">
       <Badge tone="warning">En cola de envío</Badge>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/atoms";
 
-export default function RegistroPage() {
+export default function RegisterPage() {
   return (
     <main className="mx-auto w-full max-w-md bg-surface px-6 pt-10">
       <h1 className="font-display text-2xl text-text-primary">Cree su cuenta</h1>
