@@ -27,9 +27,9 @@ export function OtpInput({
           value={digit}
           onChange={(event) => {
             const next = (value + event.target.value.replace(/\D/g, "")).slice(0, length);
-            onChange(next);
+            if (next !== value) onChange(next);
           }}
-          className="h-14 min-w-0 flex-1 rounded-md border border-border bg-surface text-center font-mono text-[13px] tracking-[0.2em] text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+          className="h-14 min-w-0 flex-1 rounded-md border border-border bg-surface text-center font-mono text-code tracking-mono text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
         />
       ))}
     </span>
