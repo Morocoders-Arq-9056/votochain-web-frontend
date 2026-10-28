@@ -1,52 +1,118 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
-import boundaries from "eslint-plugin-boundaries";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+/**
+ * Layer rules. Dependencies point inward:
+ *
+ *   app/ (interfaces)  → everything
+ *   components/         → lib/domain, lib/ui
+ *   lib/ui/             → lib/domain
+ *   lib/infrastructure/ → lib/domain, lib/ui
+ *   lib/application/    → lib/domain
+ *   lib/domain/         → nothing outside itself
+ *
+ * Enforced with `no-restricted-imports` because the project imports through
+ * the `@/` alias, which the boundaries plugin cannot resolve.
+ */
+const layerRules = [
   {
-    plugins: { boundaries },
-    settings: {
-      "boundaries/elements": [
-        { type: "domain", pattern: "lib/domain/**/*" },
-        { type: "application", pattern: "lib/application/**/*" },
-        { type: "infrastructure", pattern: "lib/infrastructure/**/*" },
-        { type: "components", pattern: "components/**/*" },
-      ],
-      "boundaries/ignore": ["**/*.test.*", "**/*.spec.*"],
-    },
+    files: ["lib/domain/**/*.{ts,tsx}"],
     rules: {
-      "boundaries/dependencies": [
+      "no-restricted-imports": [
         "error",
         {
-          default: "allow",
-          policies: [
+          patterns: [
             {
-              from: { element: { type: "domain" } },
-              disallow: [
-                { to: { element: { type: "infrastructure" } } },
-                { to: { element: { type: "components" } } },
-                { to: { element: { type: "application" } } },
+              group: [
+                "@/lib/application/*",
+                "@/lib/infrastructure/*",
+                "@/lib/ui/*",
+                "@/components/*",
+                "@/app/*",
               ],
-            },
-            {
-              from: { element: { type: "components" } },
-              disallow: [{ to: { element: { type: "infrastructure" } } }],
-            },
-            {
-              from: { element: { type: "application" } },
-              disallow: [
-                { to: { element: { type: "infrastructure" } } },
-                { to: { element: { type: "components" } } },
-              ],
+              message:
+                "El dominio no depende de otras capas: la dependencia apunta hacia adentro.",
             },
           ],
         },
       ],
     },
   },
+  {
+    files: ["lib/application/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/lib/infrastructure/*", "@/components/*"],
+              message:
+                "La capa de aplicación depende de puertos del dominio, no de infraestructura.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["lib/infrastructure/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/components/*"],
+              message:
+                "Infraestructura no conoce los componentes: los datos viajan como VOs.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["lib/ui/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/components/*", "@/lib/infrastructure/*"],
+              message:
+                "El kernel de UI depende solo del dominio; el copy no conoce el transporte.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/lib/infrastructure/*", "@/lib/application/*"],
+              message:
+                "Los componentes son presentacionales: reciben VOs del dominio y emiten eventos.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+];
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  ...layerRules,
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
