@@ -1,1 +1,0 @@
-export { ReceiptTemplate } from "./ReceiptTemplate";
