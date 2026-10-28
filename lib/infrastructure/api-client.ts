@@ -1,24 +1,16 @@
 import { env } from "@/lib/infrastructure/env";
 
-const ERROR_ES_PE: Record<string, string> = {
-  DeliveryConfirmed: "Tu voto ya cuenta",
-  DoubleVote: "Ya usó esta autorización",
-  LateVoteRejected: "Votación cerrada, voto tardío rechazado",
-  VerdictExpired: "Necesita verificar su rostro ahora",
-  UNREADABLE: "Documento borroso, retome la foto",
-  "DeliveryFailed": "No se pudo registrar. Contacte soporte, no vote de nuevo con la misma autorización",
-};
-
-export function translateError(code: string): string {
-  return ERROR_ES_PE[code] ?? "Ocurrió un error. Intente de nuevo.";
-}
-
+/**
+ * Transport-level error: it carries the HTTP status and the backend message
+ * verbatim. Translating it into a domain code is the job of
+ * `error-mapping.ts`; the es-PE text lives in `lib/ui/copy.ts`.
+ */
 export class ApiError extends Error {
   readonly status: number;
   readonly backendMessage: string;
 
   constructor(status: number, backendMessage: string) {
-    super(translateError(backendMessage));
+    super(backendMessage);
     this.name = "ApiError";
     this.status = status;
     this.backendMessage = backendMessage;
