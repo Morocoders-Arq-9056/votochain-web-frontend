@@ -1,58 +1,74 @@
-import {
-  CastVoteInputSchema,
-  toIdempotencyKey,
-  type CastVoteInput,
-} from "@/lib/domain/voting/cast-vote.vo";
+import { toVoteCastErrorCode } from "@/lib/infrastructure/api/error-mapping";
 import { ApiError, apiFetch } from "@/lib/infrastructure/api-client";
 import {
-  toCastVoteError,
-  toReceipt,
+  toVoterReceipt,
   type VoteReceiptResource,
 } from "@/lib/infrastructure/mappers/voting.mapper";
-import type { Receipt } from "@/lib/domain/voting/receipt.vo";
+import type { CastVoteCommand } from "@/lib/domain/voting/cast-vote.vo";
+import type { VoteDeliveryPort } from "@/lib/domain/voting/ports";
+import { VoteCastError } from "@/lib/domain/voting/vote-cast-error";
+import type { VoterReceipt } from "@/lib/domain/voting/voter-receipt.vo";
 
 const MAX_ATTEMPTS = 2;
 
-function isRetryable(error: unknown): boolean {
-  return (
-    error instanceof ApiError &&
-    (error.status === 0 || error.status >= 500)
-  );
+/**
+ * Idempotency key for a cast. A `VoteAuthorization` is single use, so the
+ * authorization id identifies exactly one vote: retrying with the same key
+ * replays the same vote instead of creating a second one.
+ */
+export function idempotencyKeyFor(command: CastVoteCommand): string {
+  return command.authorizationId;
 }
 
-export async function castVote(input: CastVoteInput): Promise<Receipt> {
-  const parsed = CastVoteInputSchema.parse(input);
-  const idempotencyKey = toIdempotencyKey(parsed);
+function isRetryable(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 0 || error.status >= 500);
+}
 
-  let lastError: unknown = null;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+export class VotingDeliveryAdapter implements VoteDeliveryPort {
+  async castVote(command: CastVoteCommand): Promise<VoterReceipt> {
+    const idempotencyKey = idempotencyKeyFor(command);
+
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const dto = await apiFetch<VoteReceiptResource>("/votes", {
+          method: "POST",
+          headers: { "Idempotency-Key": idempotencyKey },
+          body: JSON.stringify(command),
+        });
+        return toVoterReceipt(dto);
+      } catch (error) {
+        lastError = error;
+        if (!isRetryable(error)) break;
+      }
+    }
+
+    if (lastError instanceof ApiError) {
+      throw new VoteCastError(
+        toVoteCastErrorCode(lastError.status, lastError.backendMessage),
+      );
+    }
+    throw new VoteCastError("UNEXPECTED");
+  }
+
+  async getReceipt(
+    proposalId: string,
+    voterAddress: string,
+  ): Promise<VoterReceipt | null> {
     try {
-      const dto = await apiFetch<VoteReceiptResource>("/votes", {
-        method: "POST",
-        headers: { "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify(parsed),
-      });
-      return toReceipt(dto);
+      const dto = await apiFetch<VoteReceiptResource>(
+        `/votes/receipt?proposal=${encodeURIComponent(proposalId)}&voter=${encodeURIComponent(voterAddress)}`,
+      );
+      return toVoterReceipt(dto);
     } catch (error) {
-      lastError = error;
-      if (!isRetryable(error)) break;
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw new VoteCastError(
+        error instanceof ApiError
+          ? toVoteCastErrorCode(error.status, error.backendMessage)
+          : "UNEXPECTED",
+      );
     }
   }
-
-  if (lastError instanceof ApiError) {
-    throw new Error(
-      toCastVoteError(lastError.status, lastError.backendMessage),
-    );
-  }
-  throw lastError;
 }
 
-export async function getVoteReceipt(
-  proposalId: string,
-  voterAddress: string,
-): Promise<Receipt> {
-  const dto = await apiFetch<VoteReceiptResource>(
-    `/votes/receipt?proposal=${encodeURIComponent(proposalId)}&voter=${encodeURIComponent(voterAddress)}`,
-  );
-  return toReceipt(dto);
-}
+export const votingDeliveryPort = new VotingDeliveryAdapter();

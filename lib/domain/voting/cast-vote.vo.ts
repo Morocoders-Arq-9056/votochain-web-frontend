@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const CastVoteInputSchema = z.object({
+/**
+ * Cast vote command (Voting BC, UC4). A granted `VoteAuthorization` is
+ * consumed by this command; eligibility is not re-checked.
+ */
+export const CastVoteCommandSchema = z.object({
   authorizationId: z.string().min(1),
   choice: z.string().min(1),
 });
 
-export type CastVoteInput = z.infer<typeof CastVoteInputSchema>;
-
-export function toIdempotencyKey(input: CastVoteInput): string {
-  return CastVoteInputSchema.parse(input).authorizationId;
-}
+export type CastVoteCommand = z.infer<typeof CastVoteCommandSchema>;
