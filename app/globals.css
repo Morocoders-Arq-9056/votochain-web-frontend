@@ -1,8 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-brand-primary: #1E3A8A;
@@ -21,6 +17,9 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-sheet: 24px;
+  --text-code: 13px;
+  --leading-badge: 15px;
+  --tracking-mono: 0.2em;
   --font-display: "Outfit", sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;

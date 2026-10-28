@@ -1,12 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  castVote,
-  getVoteReceipt,
-} from "@/lib/infrastructure/api/voting.client";
-import {
-  toCastVoteError,
-  toReceipt,
-} from "@/lib/infrastructure/mappers/voting.mapper";
+import { VotingDeliveryAdapter, idempotencyKeyFor } from "./voting.client";
+import { toVoteCastErrorCode } from "./error-mapping";
+import { toVoterReceipt } from "@/lib/infrastructure/mappers/voting.mapper";
+import { VoteCastError } from "@/lib/domain/voting/vote-cast-error";
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -19,7 +15,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("voting.client castVote", () => {
+describe("VotingDeliveryAdapter", () => {
   it("envía Idempotency-Key = authorizationId y devuelve el recibo", async () => {
     const fetchMock = vi.fn(async () =>
       jsonResponse(
@@ -36,8 +32,12 @@ describe("voting.client castVote", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    await castVote({ authorizationId: "AUT-4821-0212", choice: "SI" });
+    const receipt = await new VotingDeliveryAdapter().castVote({
+      authorizationId: "AUT-4821-0212",
+      choice: "SI",
+    });
 
+    expect(receipt.status).toBe("SIGNED");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect((init.headers as Record<string, string>)["Idempotency-Key"]).toBe(
@@ -48,15 +48,18 @@ describe("voting.client castVote", () => {
     );
   });
 
-  it("no reintenta un 409 y traduce a DoubleVote", async () => {
+  it("no reintenta un 409 y lo traduce a DOUBLE_VOTE", async () => {
     const fetchMock = vi.fn(async () =>
       jsonResponse({ message: "ReplayRejected", statusCode: 409 }, 409),
     );
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      castVote({ authorizationId: "AUT-4821-0212", choice: "SI" }),
-    ).rejects.toThrow("Ya usó esta autorización");
+      new VotingDeliveryAdapter().castVote({
+        authorizationId: "AUT-4821-0212",
+        choice: "SI",
+      }),
+    ).rejects.toMatchObject({ code: "DOUBLE_VOTE" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -81,10 +84,16 @@ describe("voting.client castVote", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await castVote({ authorizationId: "AUT-4821-0212", choice: "SI" });
+    await new VotingDeliveryAdapter().castVote({
+      authorizationId: "AUT-4821-0212",
+      choice: "SI",
+    });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    for (const [, init] of fetchMock.mock.calls as unknown as [string, RequestInit][]) {
+    for (const [, init] of fetchMock.mock.calls as unknown as [
+      string,
+      RequestInit,
+    ][]) {
       expect((init.headers as Record<string, string>)["Idempotency-Key"]).toBe(
         "AUT-4821-0212",
       );
@@ -98,58 +107,54 @@ describe("voting.client castVote", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      castVote({ authorizationId: "AUT-4821-0212", choice: "SI" }),
-    ).rejects.toThrow("Ocurrió un error. Intente de nuevo.");
+      new VotingDeliveryAdapter().castVote({
+        authorizationId: "AUT-4821-0212",
+        choice: "SI",
+      }),
+    ).rejects.toBeInstanceOf(VoteCastError);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("getReceipt devuelve null cuando el voto no existe", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse({ message: "not found" }, 404)),
+    );
+
+    await expect(
+      new VotingDeliveryAdapter().getReceipt("p-1", "0xabc"),
+    ).resolves.toBeNull();
   });
 });
 
-describe("voting.client getVoteReceipt", () => {
-  it("consulta el journey por propuesta y votante", async () => {
-    const fetchMock = vi.fn(async () =>
-      jsonResponse(
-        {
-          voteId: "v-1",
-          proposalId: "p-1",
-          voterAddress: "0xabc",
-          choice: "SI",
-          status: "CONFIRMED",
-          txHash: "0xhash",
-        },
-        200,
-      ),
+describe("idempotencyKeyFor", () => {
+  it("deriva la key del authorizationId (una autorización = un voto)", () => {
+    expect(
+      idempotencyKeyFor({ authorizationId: "AUT-1", choice: "SI" }),
+    ).toBe("AUT-1");
+  });
+});
+
+describe("error-mapping", () => {
+  it("traduce la tabla de errores del backend", () => {
+    expect(toVoteCastErrorCode(409, "ReplayRejected")).toBe("DOUBLE_VOTE");
+    expect(toVoteCastErrorCode(409, "AuthorizationAlreadyConsumed")).toBe(
+      "DOUBLE_VOTE",
     );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const receipt = await getVoteReceipt("p-1", "0xabc");
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toContain("/votes/receipt?proposal=p-1&voter=0xabc");
-    expect(receipt.result.status).toBe("CONFIRMED");
+    expect(toVoteCastErrorCode(422, "ProposalNotOpen")).toBe("LATE_VOTE");
+    expect(toVoteCastErrorCode(410, "AuthorizationExpired")).toBe(
+      "AUTHORIZATION_EXPIRED",
+    );
+    expect(toVoteCastErrorCode(404, "vote not found")).toBe("NOT_FOUND");
+    expect(toVoteCastErrorCode(500, "boom")).toBe("UNAVAILABLE");
+    expect(toVoteCastErrorCode(0, "NETWORK_ERROR")).toBe("UNAVAILABLE");
+    expect(toVoteCastErrorCode(418, "teapot")).toBe("UNEXPECTED");
   });
 });
 
 describe("voting.mapper", () => {
-  it("traduce la tabla de errores del backend", () => {
-    expect(toCastVoteError(409, "ReplayRejected")).toBe(
-      "Ya usó esta autorización",
-    );
-    expect(toCastVoteError(409, "AuthorizationAlreadyConsumed")).toBe(
-      "Ya usó esta autorización",
-    );
-    expect(toCastVoteError(422, "ProposalNotOpen")).toBe(
-      "Votación cerrada, voto tardío rechazado",
-    );
-    expect(toCastVoteError(410, "AuthorizationExpired")).toContain("venció");
-    expect(toCastVoteError(404, "vote not found")).toContain("inicio");
-    expect(toCastVoteError(500, "boom")).toBe(
-      "Ocurrió un error. Intente de nuevo.",
-    );
-  });
-
   it("oculta el hash salvo CONFIRMED", () => {
-    const pending = toReceipt({
+    const pending = toVoterReceipt({
       voteId: "v-1",
       proposalId: "p-1",
       voterAddress: "0xabc",
@@ -157,12 +162,9 @@ describe("voting.mapper", () => {
       status: "SIGNED",
       txHash: "0xhash",
     });
-    expect(pending.result.status).toBe("FAILED");
-    if (pending.result.status === "FAILED") {
-      expect(pending.result).not.toHaveProperty("hash");
-    }
+    expect(pending.txHash).toBeUndefined();
 
-    const confirmed = toReceipt({
+    const confirmed = toVoterReceipt({
       voteId: "v-1",
       proposalId: "p-1",
       voterAddress: "0xabc",
@@ -170,9 +172,6 @@ describe("voting.mapper", () => {
       status: "CONFIRMED",
       txHash: "0xhash",
     });
-    expect(confirmed.result.status).toBe("CONFIRMED");
-    if (confirmed.result.status === "CONFIRMED") {
-      expect(confirmed.result.hash).toBe("0xhash");
-    }
+    expect(confirmed.txHash).toBe("0xhash");
   });
 });

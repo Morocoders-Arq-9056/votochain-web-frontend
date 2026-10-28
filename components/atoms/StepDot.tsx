@@ -1,14 +1,12 @@
 import { Check, LoaderCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { StepStatus } from "@/lib/domain/voting/receipt.vo";
-
-export type { StepStatus };
+import type { TimelineVisual } from "@/lib/ui/visuals";
 
 export function StepDot({
   status,
   className,
 }: {
-  status: StepStatus;
+  status: TimelineVisual;
   className?: string;
 }) {
   return (

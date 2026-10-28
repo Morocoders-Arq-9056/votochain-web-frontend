@@ -8,7 +8,7 @@ import {
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label: string;
-  ayuda?: string;
+  hint?: string;
   state?: FieldState;
 };
 
@@ -16,11 +16,11 @@ export function Textarea({
   className,
   id,
   label,
-  ayuda,
+  hint,
   state,
   ...props
 }: TextareaProps) {
-  const errorId = state === "error" && ayuda ? `${id}-ayuda` : undefined;
+  const hintId = state === "error" && hint ? `${id}-hint` : undefined;
   return (
     <div className="flex w-full flex-col gap-2">
       <label htmlFor={id} className={fieldLabelClass}>
@@ -29,13 +29,13 @@ export function Textarea({
       <textarea
         id={id}
         aria-invalid={state === "error"}
-        aria-describedby={errorId}
+        aria-describedby={hintId}
         className={cn(fieldVariants({ state }), "min-h-24 py-2", className)}
         {...props}
       />
-      {errorId && (
-        <p id={errorId} role="alert" className={fieldErrorClass}>
-          {ayuda}
+      {hintId && (
+        <p id={hintId} role="alert" className={fieldErrorClass}>
+          {hint}
         </p>
       )}
     </div>

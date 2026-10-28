@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRequestAuthorization } from "./eligibility.vo";
+import { canRequestAuthorization } from "./eligibility-snapshot.vo";
 
 describe("canRequestAuthorization", () => {
   it("ACTIVE + verified → ok", () => {
@@ -13,22 +13,23 @@ describe("canRequestAuthorization", () => {
   });
 
   it("moroso → motivo", () => {
-    const r = canRequestAuthorization({
+    const decision = canRequestAuthorization({
       membershipStanding: "DELINQUENT",
       verifiedNow: true,
       communityStanding: "ACTIVE",
     });
-    expect(r.ok).toBe(false);
-    expect(r.reason).toMatch(/Membresía/);
+    expect(decision.ok).toBe(false);
+    expect(decision.reason).toMatch(/Membresía/);
   });
 
   it("no verificado → pide rostro", () => {
-    const r = canRequestAuthorization({
-      membershipStanding: "ACTIVE",
-      verifiedNow: false,
-      communityStanding: "ACTIVE",
-    });
-    expect(r).toEqual({ ok: false, reason: "Necesita verificar su rostro ahora" });
+    expect(
+      canRequestAuthorization({
+        membershipStanding: "ACTIVE",
+        verifiedNow: false,
+        communityStanding: "ACTIVE",
+      }),
+    ).toEqual({ ok: false, reason: "Necesita verificar su rostro ahora" });
   });
 
   it("comunidad suspendida → motivo", () => {

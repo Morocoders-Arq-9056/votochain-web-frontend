@@ -1,24 +1,25 @@
 import { Badge } from "@/components/atoms/Badge";
+import { Disclosure } from "@/components/atoms/Disclosure";
+import { ExternalLink } from "@/components/atoms/ExternalLink";
 import { StepDot } from "@/components/atoms/StepDot";
-import type {
-  ReceiptResult,
-  ReceiptStep,
-} from "@/lib/domain/voting/receipt.vo";
-
-export type { ReceiptResult as ReceiptOutcome, ReceiptStep };
+import type { VoterReceipt } from "@/lib/domain/voting/voter-receipt.vo";
+import { RECORD_LABEL } from "@/lib/ui/copy";
+import { timelineSteps } from "@/lib/ui/timeline";
 
 type VoteReceiptTimelineProps = {
   proposal: string;
-  steps: ReceiptStep[];
-  result: ReceiptResult;
+  receipt: VoterReceipt;
+  explorerUrl?: string;
 };
 
 export function VoteReceiptTimeline({
   proposal,
-  steps,
-  result,
+  receipt,
+  explorerUrl,
 }: VoteReceiptTimelineProps) {
-  const confirmed = result.status === "CONFIRMED";
+  const confirmed = receipt.status === "CONFIRMED";
+  const steps = timelineSteps(receipt);
+
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-border bg-surface p-5">
       <header className="flex flex-col gap-1">
@@ -30,10 +31,10 @@ export function VoteReceiptTimeline({
       <div className="flex flex-col gap-2">
         {confirmed ? (
           <Badge tone="success">Confirmado</Badge>
-        ) : result.retryable ? (
-          <Badge tone="warning">Fallido · reintentando</Badge>
-        ) : (
+        ) : receipt.status === "FAILED" ? (
           <Badge tone="danger">Fallido</Badge>
+        ) : (
+          <Badge tone="warning">En curso</Badge>
         )}
 
         {confirmed ? (
@@ -45,16 +46,25 @@ export function VoteReceiptTimeline({
               Confirmado en blockchain. Solo los votos confirmados cuentan.
             </span>
           </div>
-        ) : (
+        ) : receipt.status === "FAILED" ? (
           <div className="flex flex-col gap-1 rounded-md border border-border bg-bg-danger p-4">
             <span className="text-base font-semibold text-danger">
               Aún no cuenta
             </span>
-            <span className="text-sm text-text-secondary">{result.reason}</span>
             <span className="text-sm text-text-secondary">
-              {result.retryable
-                ? "Su voto firmado se conserva sin cambios. El sistema reintenta automáticamente. No hay reenvío manual."
-                : "Su voto firmado se conserva sin cambios, pero no cuenta. No habrá más reintentos. Contacte soporte; no vuelva a votar con la misma autorización."}
+              Su voto firmado se conserva sin cambios. El sistema reintenta
+              automáticamente hasta 3 veces. Si se agota el límite, contacte
+              soporte; no vuelva a votar con la misma autorización.
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1 rounded-md border border-border bg-bg-warning p-4">
+            <span className="text-base font-semibold text-warning">
+              Su voto firmado aún no cuenta
+            </span>
+            <span className="text-sm text-text-secondary">
+              Su intención se firmó y está en cola de envío. Solo Confirmado
+              en blockchain cuenta.
             </span>
           </div>
         )}
@@ -63,11 +73,11 @@ export function VoteReceiptTimeline({
       <ol aria-live="polite" className="flex flex-col">
         {steps.map((step) => (
           <li key={step.key} className="flex gap-3 py-2">
-            <StepDot status={step.status} />
+            <StepDot status={step.visual} />
             <span className="flex flex-col">
               <span className="text-base text-text-primary">
                 {step.label}
-                {step.status === "current" && " · estado actual"}
+                {step.visual === "current" && " · estado actual"}
               </span>
               {step.dateTime && (
                 <span className="text-sm text-text-secondary">
@@ -79,25 +89,17 @@ export function VoteReceiptTimeline({
         ))}
       </ol>
 
-      {confirmed && (
+      {confirmed && receipt.txHash && (
         <div className="flex flex-col gap-2">
-          <details className="rounded-md border border-border bg-bg p-3">
-            <summary className="cursor-pointer text-sm font-semibold text-text-primary">
-              Código de constancia (hash al expandir)
-            </summary>
-            <code className="mt-2 block font-mono text-[13px] break-all text-text-secondary">
-              {result.hash}
+          <Disclosure summary={RECORD_LABEL}>
+            <code className="block font-mono text-code break-all text-text-secondary">
+              {receipt.txHash}
             </code>
-          </details>
-          {result.explorerUrl && (
-            <a
-              href={result.explorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-base font-semibold text-brand-primary"
-            >
+          </Disclosure>
+          {explorerUrl && (
+            <ExternalLink href={explorerUrl}>
               Ver en explorador blockchain
-            </a>
+            </ExternalLink>
           )}
         </div>
       )}

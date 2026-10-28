@@ -1,21 +1,25 @@
 import { z } from "zod";
 
-export const EligibilitySchema = z.object({
+/**
+ * Eligibility snapshot — frozen by Voting BC UC3 when an authorization is
+ * granted. Never rewritten by later changes.
+ */
+export const EligibilitySnapshotSchema = z.object({
   membershipStanding: z.enum(["ACTIVE", "DELINQUENT", "SUSPENDED"]),
   verifiedNow: z.boolean(),
   communityStanding: z.enum(["ACTIVE", "SUSPENDED"]),
 });
 
-export type Eligibility = z.infer<typeof EligibilitySchema>;
+export type EligibilitySnapshot = z.infer<typeof EligibilitySnapshotSchema>;
 
 export type EligibilityDecision =
   | { ok: true; reason: string }
   | { ok: false; reason: string };
 
 export function canRequestAuthorization(
-  input: Eligibility,
+  snapshot: EligibilitySnapshot,
 ): EligibilityDecision {
-  const parsed = EligibilitySchema.parse(input);
+  const parsed = EligibilitySnapshotSchema.parse(snapshot);
   if (parsed.communityStanding !== "ACTIVE") {
     return { ok: false, reason: "Comunidad suspendida" };
   }

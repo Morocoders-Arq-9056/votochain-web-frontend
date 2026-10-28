@@ -1,44 +1,30 @@
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
-import type {
-  AuthorizationResult,
-  ChecklistCriterion,
-  CriterionTone,
-} from "@/lib/domain/voting/authorization.vo";
-
-export type { AuthorizationResult, ChecklistCriterion, CriterionTone };
+import type { AuthorizationOutcome } from "@/lib/domain/voting/vote-authorization.vo";
+import type { ChecklistCriterion } from "@/lib/ui/checklist";
 
 type VoteAuthorizationChecklistProps = {
   proposal: string;
-  membership: ChecklistCriterion;
-  biometrics: ChecklistCriterion;
-  result: AuthorizationResult;
+  criteria: ChecklistCriterion[];
+  outcome: AuthorizationOutcome;
   onVoteNow?: () => void;
   onStartLiveness?: () => void;
   onRequestAgain?: () => void;
 };
 
-function Criterion({ criterion }: { criterion: ChecklistCriterion }) {
-  return (
-    <div className="flex w-full flex-col gap-2">
-      <span className="text-base text-text-primary">{criterion.question}</span>
-      <Badge tone={criterion.tone}>{criterion.status}</Badge>
-    </div>
-  );
-}
-
 export function VoteAuthorizationChecklist({
   proposal,
-  membership,
-  biometrics,
-  result,
+  criteria,
+  outcome,
   onVoteNow,
   onStartLiveness,
   onRequestAgain,
 }: VoteAuthorizationChecklistProps) {
-  const authorized = result.status === "AUTHORIZED";
-  const expired = result.status === "EXPIRED";
-  const missingBiometrics = !biometrics.met;
+  const authorized = outcome.kind === "AUTHORIZED";
+  const expired = outcome.kind === "EXPIRED";
+  const missingBiometrics = criteria.some(
+    (criterion) => criterion.id === "biometrics" && !criterion.met,
+  );
 
   return (
     <section className="flex w-full flex-col gap-4 rounded-lg border border-border bg-surface p-5">
@@ -50,16 +36,22 @@ export function VoteAuthorizationChecklist({
       </header>
 
       <div className="flex flex-col gap-4">
-        <Criterion criterion={membership} />
-        <Criterion criterion={biometrics} />
+        {criteria.map((criterion) => (
+          <div key={criterion.id} className="flex w-full flex-col gap-2">
+            <span className="text-base text-text-primary">
+              {criterion.question}
+            </span>
+            <Badge tone={criterion.tone}>{criterion.status}</Badge>
+          </div>
+        ))}
       </div>
 
       {authorized && (
         <div className="flex flex-col gap-2">
           <Badge tone="success">Autorizada</Badge>
           <p className="text-base text-text-primary">
-            Autorización de un solo uso {result.code}, válida hasta{" "}
-            {result.validUntil}.
+            Autorización de un solo uso {outcome.authorization.code}, válida
+            hasta {outcome.authorization.validUntil}.
           </p>
           <p className="text-sm text-text-secondary">
             Al emitirla se congelaron su elegibilidad y el veredicto biométrico.
@@ -68,13 +60,13 @@ export function VoteAuthorizationChecklist({
         </div>
       )}
 
-      {result.status === "DENIED" && (
+      {outcome.kind === "DENIED" && (
         <div className="flex flex-col gap-2">
           <Badge tone="danger">Denegada</Badge>
           <p className="text-base text-text-primary">
             No puede votar en esta propuesta
           </p>
-          <p className="text-sm text-text-secondary">{result.reason}</p>
+          <p className="text-sm text-text-secondary">{outcome.reason}</p>
         </div>
       )}
 
