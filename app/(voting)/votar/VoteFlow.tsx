@@ -1,16 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { BottomNavigation } from "@/components/organisms/BottomNavigation";
 import { SignModal } from "@/components/organisms/SignModal";
 import { VoteForm, type VoteOption } from "@/components/organisms/VoteForm";
-import {
-  CONSUMED_AUTHORIZATION_DETAIL,
-  CONSUMED_AUTHORIZATION_TITLE,
-  LATE_VOTE_DETAIL,
-  LATE_VOTE_TITLE,
-} from "@/lib/infrastructure/ui-labels";
+import { VOTE_CAST_DETAILS, VOTE_CAST_MESSAGES } from "@/lib/ui/copy";
+import { submitVote } from "./actions";
 
 const OPTIONS: VoteOption[] = [
   { value: "SI", label: "Sí", description: "Apruebo la propuesta" },
@@ -24,17 +20,35 @@ const NAV_ITEMS = [
   { href: "/recibo/demo", label: "Mi recibo", icon: "receipt" as const },
 ];
 
-export function VoteFlow({ edgeCase }: { edgeCase?: string }) {
+export function VoteFlow() {
   const router = useRouter();
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [signing, setSigning] = useState(false);
+  const [error, setError] = useState<{ title: string; detail: string } | null>(
+    null,
+  );
+  const [isPending, startTransition] = useTransition();
 
-  const selectedOption = OPTIONS.find((o) => o.value === selectedValue);
+  const selectedOption = OPTIONS.find((option) => option.value === selectedValue);
 
   const handleSign = () => {
-    setSigning(true);
-    router.push("/recibo/demo");
+    if (!selectedValue) return;
+    startTransition(async () => {
+      const result = await submitVote({
+        authorizationId: "AUT-4821-0212",
+        choice: selectedValue,
+      });
+      if (result.ok) {
+        setModalOpen(false);
+        router.push(`/recibo/${result.receipt.voteId}`);
+        return;
+      }
+      setError({
+        title: VOTE_CAST_MESSAGES[result.code],
+        detail: VOTE_CAST_DETAILS[result.code],
+      });
+      setModalOpen(false);
+    });
   };
 
   return (
@@ -50,26 +64,15 @@ export function VoteFlow({ edgeCase }: { edgeCase?: string }) {
           selectedValue={selectedValue}
           onSelect={setSelectedValue}
           onRequestSignature={() => setModalOpen(true)}
-          signing={signing}
+          signing={isPending}
         />
 
-        {edgeCase === "doble" && (
+        {error && (
           <div className="flex flex-col gap-1 rounded-md border border-border bg-bg-danger p-4">
             <span className="text-base font-semibold text-danger">
-              {CONSUMED_AUTHORIZATION_TITLE}
+              {error.title}
             </span>
-            <span className="text-sm text-text-secondary">
-              {CONSUMED_AUTHORIZATION_DETAIL}
-            </span>
-          </div>
-        )}
-
-        {edgeCase === "tardio" && (
-          <div className="flex flex-col gap-1 rounded-md border border-border bg-bg-danger p-4">
-            <span className="text-base font-semibold text-danger">
-              {LATE_VOTE_TITLE}
-            </span>
-            <span className="text-sm text-text-secondary">{LATE_VOTE_DETAIL}</span>
+            <span className="text-sm text-text-secondary">{error.detail}</span>
           </div>
         )}
       </div>
@@ -79,11 +82,15 @@ export function VoteFlow({ edgeCase }: { edgeCase?: string }) {
       <SignModal
         open={modalOpen}
         proposalTitle="Mantenimiento de áreas comunes"
-        optionLabel={selectedOption ? `${selectedOption.label}${selectedOption.description ? ` · ${selectedOption.description}` : ""}` : ""}
+        optionLabel={
+          selectedOption
+            ? `${selectedOption.label}${selectedOption.description ? ` · ${selectedOption.description}` : ""}`
+            : ""
+        }
         voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
         onSign={handleSign}
         onCancel={() => setModalOpen(false)}
-        signing={signing}
+        signing={isPending}
       />
     </main>
   );
