@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { VoteReceiptTimeline } from "@/components/organisms/VoteReceiptTimeline";
-import { getReceipt } from "@/lib/application/get-receipt";
+import { voteDeliveryPort } from "@/lib/infrastructure/api/composition";
 
 export async function ReceiptContent({
   params,
@@ -8,14 +8,18 @@ export async function ReceiptContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const receipt = await getReceipt(id);
+  const receipt = await voteDeliveryPort().getReceipt(id, "0x0000000000000000000000000000000000000000");
   if (!receipt) notFound();
 
   return (
     <VoteReceiptTimeline
-      proposal={receipt.proposal}
-      steps={receipt.steps}
-      result={receipt.result}
+      proposal="Mantenimiento de áreas comunes"
+      receipt={receipt}
+      explorerUrl={
+        receipt.status === "CONFIRMED"
+          ? "https://explorador.example/voto/0x9f3a"
+          : undefined
+      }
     />
   );
 }
