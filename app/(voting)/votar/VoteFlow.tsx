@@ -6,6 +6,7 @@ import { BottomNavigation } from "@/components/organisms/BottomNavigation";
 import { SignModal } from "@/components/organisms/SignModal";
 import { VoteForm, type VoteOption } from "@/components/organisms/VoteForm";
 import { VOTE_CAST_DETAILS, VOTE_CAST_MESSAGES } from "@/lib/ui/copy";
+import { routes } from "@/lib/ui/routes";
 import { submitVote } from "./actions";
 
 const OPTIONS: VoteOption[] = [
@@ -15,12 +16,16 @@ const OPTIONS: VoteOption[] = [
 ];
 
 const NAV_ITEMS = [
-  { href: "/", label: "Inicio", icon: "home" as const },
-  { href: "/votar", label: "Votar", icon: "vote" as const, active: true },
-  { href: "/recibo/demo", label: "Mi recibo", icon: "receipt" as const },
+  { href: routes.home(), label: "Inicio", icon: "home" as const },
+  { href: routes.votar(), label: "Votar", icon: "vote" as const, active: true },
+  { href: routes.recibo("demo"), label: "Mi recibo", icon: "receipt" as const },
 ];
 
-export function VoteFlow() {
+export function VoteFlow({
+  authorizationId,
+}: {
+  authorizationId: string;
+}) {
   const router = useRouter();
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,12 +40,12 @@ export function VoteFlow() {
     if (!selectedValue) return;
     startTransition(async () => {
       const result = await submitVote({
-        authorizationId: "AUT-4821-0212",
+        authorizationId,
         choice: selectedValue,
       });
       if (result.ok) {
         setModalOpen(false);
-        router.push(`/recibo/${result.receipt.voteId}`);
+        router.push(routes.recibo(result.receipt.voteId));
         return;
       }
       setError({
@@ -52,13 +57,13 @@ export function VoteFlow() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-bg px-4 py-6">
-      <div className="flex w-full flex-1 flex-col gap-4">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-bg px-4 py-6 md:max-w-3xl lg:max-w-5xl">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 md:max-w-2xl lg:max-w-3xl">
         <VoteForm
           proposalTitle="Mantenimiento de áreas comunes"
           frozenRule="Regla aplicada: 50%+1 sobre activos al abrir 12/02/2026"
           voterSummary="María Quispe · DNI 4821xxxx · Dpto 302"
-          authorizationCode="AUT-4821-0212"
+          authorizationCode={authorizationId}
           validUntil="10:05 PET (UTC−5)"
           options={OPTIONS}
           selectedValue={selectedValue}
@@ -77,7 +82,9 @@ export function VoteFlow() {
         )}
       </div>
 
-      <BottomNavigation items={NAV_ITEMS} />
+      <div className="lg:hidden">
+        <BottomNavigation items={NAV_ITEMS} />
+      </div>
 
       <SignModal
         open={modalOpen}

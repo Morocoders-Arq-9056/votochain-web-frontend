@@ -8,7 +8,7 @@ export async function ReceiptContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const receipt = await voteDeliveryPort().getReceipt(id, "0x0000000000000000000000000000000000000000");
+  const receipt = await voteDeliveryPort().getReceiptById(id);
   if (!receipt) notFound();
 
   return (
