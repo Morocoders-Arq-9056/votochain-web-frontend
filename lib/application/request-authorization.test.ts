@@ -23,7 +23,7 @@ describe("createRequestAuthorizationService", () => {
       }),
     );
 
-    const { outcome } = await service.request("p-1");
+    const { outcome } = await service.request({ proposalId: "p-1", personId: "per-1" });
 
     expect(outcome).toEqual({
       kind: "AUTHORIZED",
@@ -39,7 +39,7 @@ describe("createRequestAuthorizationService", () => {
       }),
     );
 
-    const { outcome } = await service.request("p-1");
+    const { outcome } = await service.request({ proposalId: "p-1", personId: "per-1" });
 
     expect(outcome.kind).toBe("DENIED");
     if (outcome.kind === "DENIED") {
@@ -52,7 +52,7 @@ describe("createRequestAuthorizationService", () => {
       portWith({ snapshot: activeSnapshot, authorizationState: "EXPIRED" }),
     );
 
-    const { outcome } = await service.request("p-1");
+    const { outcome } = await service.request({ proposalId: "p-1", personId: "per-1" });
 
     expect(outcome).toEqual({ kind: "EXPIRED" });
   });
@@ -62,7 +62,7 @@ describe("createRequestAuthorizationService", () => {
       portWith({ snapshot: activeSnapshot, authorizationState: "EXPIRED" }),
     );
 
-    const { snapshot } = await service.request("p-1");
+    const { snapshot } = await service.request({ proposalId: "p-1", personId: "per-1" });
 
     expect(snapshot).toEqual(activeSnapshot);
   });

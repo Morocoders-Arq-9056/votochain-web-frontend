@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 const EnvSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:3001"),
+  NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:4000"),
   USE_MOCK_API: z
     .enum(["true", "false"])
-    .default("true")
+    .default("false")
     .transform((value) => value === "true"),
 });
 

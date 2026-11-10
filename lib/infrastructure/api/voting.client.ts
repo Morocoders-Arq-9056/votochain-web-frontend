@@ -2,6 +2,8 @@ import { toVoteCastErrorCode } from "@/lib/infrastructure/api/error-mapping";
 import { ApiError, apiFetch } from "@/lib/infrastructure/api-client";
 import {
   toVoterReceipt,
+  toVoterReceiptFromProof,
+  type ProofResource,
   type VoteReceiptResource,
 } from "@/lib/infrastructure/mappers/voting.mapper";
 import type { CastVoteCommand } from "@/lib/domain/voting/cast-vote.vo";
@@ -60,6 +62,22 @@ export class VotingDeliveryAdapter implements VoteDeliveryPort {
         `/votes/receipt?proposal=${encodeURIComponent(proposalId)}&voter=${encodeURIComponent(voterAddress)}`,
       );
       return toVoterReceipt(dto);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw new VoteCastError(
+        error instanceof ApiError
+          ? toVoteCastErrorCode(error.status, error.backendMessage)
+          : "UNEXPECTED",
+      );
+    }
+  }
+
+  async getReceiptById(voteId: string): Promise<VoterReceipt | null> {
+    try {
+      const dto = await apiFetch<ProofResource>(
+        `/votes/${encodeURIComponent(voteId)}`,
+      );
+      return toVoterReceiptFromProof(dto);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw new VoteCastError(

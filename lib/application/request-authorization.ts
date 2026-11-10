@@ -17,8 +17,11 @@ export type AuthorizationServiceResult = {
  */
 export function createRequestAuthorizationService(port: AuthorizationPort) {
   return {
-    async request(proposalId: string): Promise<AuthorizationServiceResult> {
-      const facts = await port.request(proposalId);
+    async request(input: {
+      proposalId: string;
+      personId: string;
+    }): Promise<AuthorizationServiceResult> {
+      const facts = await port.request(input);
 
       if (facts.snapshot) {
         const decision = canRequestAuthorization(facts.snapshot);

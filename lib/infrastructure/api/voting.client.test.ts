@@ -125,6 +125,46 @@ describe("VotingDeliveryAdapter", () => {
       new VotingDeliveryAdapter().getReceipt("p-1", "0xabc"),
     ).resolves.toBeNull();
   });
+
+  it("getReceiptById mapea el proof (recovered como votante)", async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse(
+        {
+          voteId: "v-1",
+          proposalId: "p-1",
+          choice: "SI",
+          signature: { v: 27, r: "0xr", s: "0xs" },
+          txHash: null,
+          blockNumber: null,
+          recovered: "0xabc",
+          status: "SIGNED",
+        },
+        200,
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const receipt = await new VotingDeliveryAdapter().getReceiptById("v-1");
+
+    expect(receipt).toMatchObject({
+      voteId: "v-1",
+      voterAddress: "0xabc",
+      status: "SIGNED",
+    });
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url.endsWith("/votes/v-1")).toBe(true);
+  });
+
+  it("getReceiptById devuelve null en 404", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse({ message: "not found" }, 404)),
+    );
+
+    await expect(
+      new VotingDeliveryAdapter().getReceiptById("v-missing"),
+    ).resolves.toBeNull();
+  });
 });
 
 describe("idempotencyKeyFor", () => {

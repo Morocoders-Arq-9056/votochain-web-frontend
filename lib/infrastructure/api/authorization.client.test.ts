@@ -28,7 +28,10 @@ describe("VotingAuthorizationAdapter", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const facts = await new VotingAuthorizationAdapter().request("p-1");
+    const facts = await new VotingAuthorizationAdapter().request({
+      proposalId: "p-1",
+      personId: "per-1",
+    });
 
     expect(facts.authorizationState).toBe("GRANTED");
     expect(facts.authorization?.code).toBe("AUT-4821-0212");
@@ -38,6 +41,7 @@ describe("VotingAuthorizationAdapter", () => {
     expect(url).toContain("/authorizations");
     expect(init.method).toBe("POST");
     expect(init.body).toContain('"proposalId":"p-1"');
+    expect(init.body).toContain('"personId":"per-1"');
   });
 
   it("un 409 se traduce en denegación con motivo", async () => {
@@ -48,7 +52,10 @@ describe("VotingAuthorizationAdapter", () => {
       ),
     );
 
-    const facts = await new VotingAuthorizationAdapter().request("p-1");
+    const facts = await new VotingAuthorizationAdapter().request({
+      proposalId: "p-1",
+      personId: "per-1",
+    });
 
     expect(facts.authorizationState).toBe("DENIED");
     expect(facts.denialReason).toMatch(/pendiente/);
@@ -71,8 +78,28 @@ describe("VotingAuthorizationAdapter", () => {
       ),
     );
 
-    const facts = await new VotingAuthorizationAdapter().request("p-1");
+    const expired = await new VotingAuthorizationAdapter().request({
+      proposalId: "p-1",
+      personId: "per-1",
+    });
 
-    expect(facts.authorizationState).toBe("EXPIRED");
+    expect(expired.authorizationState).toBe("EXPIRED");
+  });
+
+  it("un 404 (sin billetera) se traduce en denegación con motivo", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        jsonResponse({ message: "no signing capability", statusCode: 404 }, 404),
+      ),
+    );
+
+    const facts = await new VotingAuthorizationAdapter().request({
+      proposalId: "p-1",
+      personId: "per-1",
+    });
+
+    expect(facts.authorizationState).toBe("DENIED");
+    expect(facts.denialReason).toMatch(/billetera/);
   });
 });

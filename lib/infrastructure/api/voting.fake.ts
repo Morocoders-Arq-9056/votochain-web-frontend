@@ -39,4 +39,9 @@ export class FakeVotingDeliveryAdapter implements VoteDeliveryPort {
         "0x9f3a7c21b8e4d5f6a2c9b0d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
     };
   }
+
+  async getReceiptById(voteId: string): Promise<VoterReceipt | null> {
+    if (voteId === "demo") return this.getReceipt("demo");
+    return null;
+  }
 }

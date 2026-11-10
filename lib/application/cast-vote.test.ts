@@ -18,6 +18,7 @@ function portWith(
   return {
     castVote,
     getReceipt: vi.fn(async () => null),
+    getReceiptById: vi.fn(async () => null),
   };
 }
 
