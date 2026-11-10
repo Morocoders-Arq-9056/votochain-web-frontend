@@ -3,14 +3,17 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "./Spinner";
 
 const buttonVariants = cva(
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-6 text-base font-semibold transition-colors focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-field px-6 text-base font-semibold transition-colors focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "bg-brand-primary text-white",
-        secondary: "border border-border bg-surface text-text-primary",
-        danger: "bg-danger text-white",
-        ghost: "text-text-primary",
+        primary:
+          "bg-brand-primary text-white hover:bg-brand-deep active:bg-brand-deep",
+        secondary:
+          "border border-border bg-surface text-text-primary hover:border-border-strong hover:bg-surface-hover active:bg-surface-hover",
+        danger: "bg-danger text-white hover:brightness-95 active:brightness-90",
+        ghost:
+          "text-text-primary hover:bg-surface-hover active:bg-surface-hover",
       },
     },
     defaultVariants: { variant: "primary" },

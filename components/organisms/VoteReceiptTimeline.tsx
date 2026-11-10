@@ -21,7 +21,7 @@ export function VoteReceiptTimeline({
   const steps = timelineSteps(receipt);
 
   return (
-    <section className="flex w-full flex-col gap-4 rounded-lg border border-border bg-surface p-5">
+    <section className="flex w-full flex-col gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
       <header className="flex flex-col gap-1">
         <span className="text-sm text-text-secondary">Miembro / Mi recibo</span>
         <h1 className="font-display text-2xl text-text-primary">Mi recibo</h1>

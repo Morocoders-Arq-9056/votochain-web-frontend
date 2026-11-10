@@ -1,27 +1,22 @@
-import { History } from "lucide-react";
-
 type AuditRowProps = {
-  /** Who performed the change. */
+  /** Event title, rendered in semibold. */
   actor: string;
   /** When it happened, already formatted for es-PE. */
   occurredAt: string;
-  /** Why it happened. */
+  /** Detail line. */
   reason: string;
 };
 
 /**
- * Read-only traceability row: who, when, why. It never offers an edit action
- * — history is immutable.
+ * Read-only traceability row: title, when/who, detail. Rows are separated
+ * by dividers in the parent (`divide-y`) — never cards. History is immutable.
  */
 export function AuditRow({ actor, occurredAt, reason }: AuditRowProps) {
   return (
-    <div className="flex w-full items-start gap-3 rounded-md border border-border bg-surface p-4">
-      <History aria-hidden className="mt-0.5 size-5 shrink-0 text-text-secondary" />
-      <div className="flex flex-col gap-1">
-        <span className="text-base font-semibold text-text-primary">{actor}</span>
-        <span className="text-sm text-text-secondary">{occurredAt}</span>
-        <span className="text-sm text-text-secondary">{reason}</span>
-      </div>
+    <div className="flex w-full flex-col gap-1 py-3 first:pt-0 last:pb-0">
+      <span className="text-sm font-semibold text-text-primary">{actor}</span>
+      <span className="text-xs text-text-secondary">{occurredAt}</span>
+      <span className="text-sm text-text-secondary">{reason}</span>
     </div>
   );
 }

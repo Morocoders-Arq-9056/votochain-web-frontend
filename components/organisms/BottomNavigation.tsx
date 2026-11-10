@@ -1,15 +1,22 @@
 import Link from "next/link";
-import { Home, ReceiptText, Vote } from "lucide-react";
+import { Home, ReceiptText, ScanFace, UserRound, Vote, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type NavigationItem = {
   href: string;
   label: string;
-  icon: "home" | "vote" | "receipt";
+  icon: "home" | "vote" | "receipt" | "dashboard" | "identity" | "account";
   active?: boolean;
 };
 
-const ICONS = { home: Home, vote: Vote, receipt: ReceiptText } as const;
+const ICONS = {
+  home: Home,
+  vote: Vote,
+  receipt: ReceiptText,
+  dashboard: LayoutDashboard,
+  identity: ScanFace,
+  account: UserRound,
+} as const;
 
 export function BottomNavigation({ items }: { items: NavigationItem[] }) {
   return (

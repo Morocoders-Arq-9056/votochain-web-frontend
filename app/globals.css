@@ -2,6 +2,9 @@
 
 @theme {
   --color-brand-primary: #1E3A8A;
+  --color-brand-deep: #172E6E;
+  --color-surface-hover: #F1F5F9;
+  --color-border-strong: #CBD5E1;
   --color-success: #059669;
   --color-warning: #D97706;
   --color-danger: #DC2626;
@@ -10,13 +13,29 @@
   --color-bg: #F8FAFC;
   --color-surface: #FFFFFF;
   --color-border: #E2E8F0;
+  --color-placeholder: #94A3B8;
   --color-bg-success: #ECFDF5;
   --color-bg-warning: #FFFBEB;
   --color-bg-danger: #FEF2F2;
   --radius-sm: 6px;
   --radius-md: 10px;
+  --radius-field: 8px;
+  --radius-card: 16px;
   --radius-lg: 16px;
   --radius-sheet: 24px;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 4px 16px -4px rgb(15 23 42 / 0.08);
+  --spacing-form-gap: 16px;
+  --spacing-form-gap-auth: 24px;
+  --spacing-auth-gap: clamp(3rem, 46vw - 26.5rem, 15rem);
+  --container-auth: 1291px;
+  --container-auth-gap: 240px;
+  --container-auth-x: 72px;
+  --container-task: 451px;
+  --container-context: 600px;
+  --container-inner: 1312px;
+  --container-app-x: 64px;
+  --panel-pad: 20px;
+  --input-w: 409px;
   --text-code: 13px;
   --leading-badge: 15px;
   --tracking-mono: 0.2em;
@@ -57,15 +76,14 @@
 }
 
 /*
- * Sombras VDS: Figma Foundations indica "sm / md / lg · discretas" sin
- * valores exactos (extracción de código no disponible). Se conservan las
- * --shadow-sm/md/lg nativas de Tailwind v4 hasta handoff de valores.
+ * Sombras VDS: elevación discreta para cards sobre fondo bg.
+ * Medido como sutil en desktop (panel 451px / tabla 1312px).
  */
 
 @utility form-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-form-gap);
   & > * {
     min-height: 48px;
     width: 100%;
@@ -77,6 +95,22 @@
     }
   }
 }
+
+@utility form-actions-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  & > * {
+    min-height: 48px;
+    width: 100%;
+  }
+}
+
+/*
+ * Gap columna contexto ↔ formulario (Figma 240px en desktop 1440).
+ * Token fluido: 48px a 1024, ~80px a 1280, 240px desde ~1440.
+ * Uso: lg:gap-[var(--spacing-auth-gap)]. Sin saltos por breakpoint.
+ */
 
 /*
  * Par de botones de diálogo (medido en Figma 9:33417 Suspender membresía):
