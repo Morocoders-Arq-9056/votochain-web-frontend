@@ -9,10 +9,10 @@ export function createRegisterService(port: AuthPort) {
     async register(input: unknown): Promise<RegisterOutcome> {
       const parsed = RegisterSchema.safeParse(input);
       if (!parsed.success) {
-        const emailIssue = parsed.error.issues.some(
-          (issue) => issue.path.join(".") === "email",
-        );
-        if (emailIssue) return { ok: false, code: "INVALID_EMAIL" };
+        const paths = parsed.error.issues.map((issue) => issue.path.join("."));
+        if (paths.includes("email")) return { ok: false, code: "INVALID_EMAIL" };
+        if (paths.includes("password"))
+          return { ok: false, code: "INVALID_PASSWORD" };
         if (
           parsed.error.issues.some((issue) => issue.code === "custom") &&
           !("acceptedPolicyVersion" in (input as object))

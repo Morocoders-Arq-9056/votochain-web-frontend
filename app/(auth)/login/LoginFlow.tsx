@@ -35,10 +35,14 @@ export function LoginFlow() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  async function submit(email: string, proofKind: "LOCAL" | "OUTSIDE") {
+  async function submit(
+    email: string,
+    password: string | undefined,
+    proofKind: "LOCAL" | "OUTSIDE",
+  ) {
     setPending(true);
     setError(null);
-    const outcome = await loginUser({ email, proofKind });
+    const outcome = await loginUser({ email, password, proofKind });
     setPending(false);
     if (outcome.ok) {
       setNotice(LOGIN_CONFIRMED);
@@ -58,8 +62,8 @@ export function LoginFlow() {
       <LoginForm
         pending={pending}
         serverError={error}
-        onSubmit={(input) => submit(input.email, "LOCAL")}
-        onGoogle={(email) => submit(email, "OUTSIDE")}
+        onSubmit={(input) => submit(input.email, input.password, "LOCAL")}
+        onGoogle={(email) => submit(email, undefined, "OUTSIDE")}
         onRegister={() => router.push(routes.registro())}
         onRecover={async (email) => {
           const outcome = await recoverAccess(email);

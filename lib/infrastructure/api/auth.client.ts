@@ -19,7 +19,7 @@ export class HttpAuthAdapter implements AuthPort {
     try {
       const raw = await apiFetch<unknown>("/auth/sign-up", {
         method: "POST",
-        body: JSON.stringify({ email: command.email }),
+        body: JSON.stringify({ email: command.email, password: command.password }),
       });
       const user = UserResourceSchema.parse(raw);
       return { ok: true, email: user.email, personId: user.personId };
@@ -36,9 +36,13 @@ export class HttpAuthAdapter implements AuthPort {
 
   async login(command: LoginCommand): Promise<LoginOutcome> {
     try {
+      const body =
+        command.proofKind === "LOCAL"
+          ? { email: command.email, password: command.password }
+          : { email: command.email, proofKind: command.proofKind };
       const raw = await apiFetch<unknown>("/auth/sign-in", {
         method: "POST",
-        body: JSON.stringify(command),
+        body: JSON.stringify(body),
       });
       const user = UserResourceSchema.parse(raw);
       if (user.standing === "SUSPENDED") {

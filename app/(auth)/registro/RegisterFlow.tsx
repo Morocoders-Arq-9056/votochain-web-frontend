@@ -12,6 +12,7 @@ import {
   REGISTER_DESCRIPTION,
   REGISTER_DUPLICATE,
   REGISTER_INVALID_EMAIL,
+  REGISTER_INVALID_PASSWORD,
   REGISTER_LOGIN_LINK,
   REGISTER_TERMS_REQUIRED,
   REGISTER_TITLE,
@@ -52,6 +53,8 @@ export function RegisterFlow() {
               setError(REGISTER_DUPLICATE);
             } else if (outcome.code === "TERMS_REQUIRED") {
               setError(REGISTER_TERMS_REQUIRED);
+            } else if (outcome.code === "INVALID_PASSWORD") {
+              setError(REGISTER_INVALID_PASSWORD);
             } else {
               setError(REGISTER_INVALID_EMAIL);
             }

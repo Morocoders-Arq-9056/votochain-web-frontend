@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/atoms/Button";
-import { FormField } from "@/components/molecules/FormField";
+import { LoginCredentials } from "@/components/molecules/LoginCredentials";
 import {
-  LOGIN_EMAIL_LABEL,
   LOGIN_FOOTNOTE,
   LOGIN_GOOGLE,
+  LOGIN_PASSWORD_REQUIRED,
   LOGIN_RECOVER,
   LOGIN_REGISTER_LINK,
   LOGIN_REGISTER_PROMPT,
@@ -16,7 +16,7 @@ import {
 type LoginFormProps = {
   pending?: boolean;
   serverError?: string | null;
-  onSubmit: (input: { email: string }) => void;
+  onSubmit: (input: { email: string; password: string }) => void;
   onGoogle: (email: string) => void;
   onRecover: (email: string) => void;
   onRegister: () => void;
@@ -31,22 +31,28 @@ export function LoginForm({
   onRegister,
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [touched, setTouched] = useState(false);
+  const passwordError =
+    touched && !password ? LOGIN_PASSWORD_REQUIRED : null;
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit({ email });
+        setTouched(true);
+        if (!password) return;
+        onSubmit({ email, password });
       }}
       className="flex w-full flex-col gap-[var(--spacing-form-gap-auth)]"
       noValidate
     >
-      <FormField
-        id="login-email"
-        label={LOGIN_EMAIL_LABEL}
-        type="email"
-        value={email}
-        onChange={setEmail}
+      <LoginCredentials
+        email={email}
+        password={password}
+        passwordError={passwordError}
+        onEmail={setEmail}
+        onPassword={setPassword}
       />
       {serverError && (
         <p role="alert" className="text-sm text-danger">

@@ -10,6 +10,11 @@ export function toRegisterErrorCode(
   if (status === 409) return "DUPLICATE";
   if (status === 422 && backendMessage === "TermsRequired")
     return "TERMS_REQUIRED";
+  if (
+    (status === 400 || status === 422) &&
+    /password|secret/i.test(backendMessage)
+  )
+    return "INVALID_PASSWORD";
   if (status === 400 || status === 422) return "INVALID_EMAIL";
   return "UNAVAILABLE";
 }

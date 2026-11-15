@@ -37,6 +37,12 @@ describe("toRegisterErrorCode", () => {
     expect(toRegisterErrorCode(400, "HTTP_400")).toBe("INVALID_EMAIL");
   });
 
+  it("400 con mensaje de contraseña es INVALID_PASSWORD", () => {
+    expect(
+      toRegisterErrorCode(400, "password must mix lower, upper and digit"),
+    ).toBe("INVALID_PASSWORD");
+  });
+
   it("409 (dirección ocupada) es DUPLICATE", () => {
     expect(toRegisterErrorCode(409, "address already held")).toBe("DUPLICATE");
   });

@@ -28,7 +28,18 @@ export class FakeAuthAdapter implements AuthPort {
     if (this.caso === "sesion" || command.email.includes("sesion")) {
       return { ok: false, code: "PREVIOUS_SESSION" };
     }
-    if (this.caso === "fallida" || command.email.includes("incorrecta")) {
+    if (
+      command.proofKind === "LOCAL" &&
+      (this.caso === "fallida" ||
+        command.email.includes("incorrecta") ||
+        command.password === "incorrecta")
+    ) {
+      return { ok: false, code: "INVALID_CREDENTIALS" };
+    }
+    if (
+      command.proofKind === "OUTSIDE" &&
+      (this.caso === "fallida" || command.email.includes("incorrecta"))
+    ) {
       return { ok: false, code: "INVALID_CREDENTIALS" };
     }
     if (

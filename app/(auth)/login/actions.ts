@@ -6,6 +6,7 @@ import { authPort } from "@/lib/infrastructure/api/composition";
 
 export async function loginUser(input: {
   email: string;
+  password?: string;
   proofKind: "LOCAL" | "OUTSIDE";
 }) {
   const service = createLoginService(authPort());

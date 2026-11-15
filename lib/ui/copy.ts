@@ -90,6 +90,8 @@ export const CONTINUE_LABEL = "Continuar";
 export const REGISTER_FOOTNOTE =
   "Al crear su cuenta acepta las condiciones de uso y la política de privacidad.";
 export const REGISTER_INVALID_EMAIL = "Revise su correo, parece incompleto.";
+export const REGISTER_INVALID_PASSWORD =
+  "Su contraseña debe tener 12 caracteres o más y combinar mayúsculas, minúsculas y números.";
 export const REGISTER_DUPLICATE =
   "Ese correo ya tiene una cuenta. Inicie sesión o recupere su acceso.";
 export const REGISTER_TERMS_REQUIRED =
@@ -113,6 +115,7 @@ export const LOGIN_FOOTNOTE =
   "También puede usar una identidad externa vinculada a su cuenta.";
 export const LOGIN_FAILED =
   "No pudimos validar su acceso. Revise sus datos e intente de nuevo.";
+export const LOGIN_PASSWORD_REQUIRED = "Ingrese su contraseña.";
 export const LOGIN_LOCKED =
   "Bloqueamos su acceso por intentos reiterados. Intente de nuevo en unos minutos.";
 export const LOGIN_SUSPENDED =
